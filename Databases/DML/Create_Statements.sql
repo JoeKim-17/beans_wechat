@@ -1,0 +1,53 @@
+
+--ADD CONSTRAINTS to User TABLE
+ALTER TABLE Users
+ADD CONSTRAINT UsersPk
+PRIMARY KEY (UserId) ;
+
+ALTER TABLE Users
+ADD CONSTRAINT UniqueUserName UNIQUE (UserName);
+
+ALTER TABLE Users
+ADD CONSTRAINT UniqueEmailAddress UNIQUE (EmailAddress);
+
+ALTER TABLE Users
+ADD CONSTRAINT UniqueMobileNo UNIQUE (MobileNo);
+
+--ADD CONSTRAINTS to Messages TABLE
+ALTER TABLE Messages
+ADD CONSTRAINT MessagePK
+PRIMARY KEY (MessageId) ;
+
+ALTER TABLE Messages
+ADD CONSTRAINT MessageFK1
+FOREIGN KEY (Sender)  REFERENCES Users(UserId) ON DELETE CASCADE;
+
+ALTER TABLE Messages
+ADD CONSTRAINT MessageFK2
+FOREIGN KEY (Receiver)  REFERENCES Users(UserId) ON DELETE CASCADE;
+
+ALTER TABLE Messages
+ADD CONSTRAINT CheckMessageLength CHECK (LENGTH(MessageText) <= 4096);
+
+ALTER TABLE Messages
+MODIFY COLUMN CreatedAt DATETIME DEFAULT DATETIME;
+
+ALTER TABLE Messages
+ADD CONSTRAINT CheckReceiverNotNull CHECK (Receiver IS NOT NULL);
+
+ALTER TABLE Messages
+ADD CONSTRAINT CheckSenderNotNull CHECK (Sender IS NOT NULL);
+
+ALTER TABLE Messages
+ADD CONSTRAINT CheckSenderNotEquaRecipient
+CHECK (Sender <> Receiver);
+
+--ADD CONSTRAINT to Conversations TABLE
+ALTER TABLE Conversations
+ADD CONSTRAINT ConversationsPK
+PRIMARY KEY (ConversationsId);
+
+ALTER TABLE Messages
+ADD CONSTRAINT ConversationsFK
+FOREIGN KEY (MessageId)  REFERENCES Messages(MessageId);
+
