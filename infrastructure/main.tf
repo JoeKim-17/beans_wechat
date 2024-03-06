@@ -124,7 +124,7 @@ resource "aws_elastic_beanstalk_environment" "elasticbeanstalk" {
   setting {
     namespace = "aws:ec2:vpc"
     name      = "Subnets"
-    value     = aws_subnet.subnet1
+    value     = aws_subnet.subnet1[0]
   }
 
   setting {
