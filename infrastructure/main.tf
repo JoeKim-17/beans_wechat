@@ -88,6 +88,14 @@ resource "aws_security_group" "wechat-beans-instance-sg" {
   }
 }
 
+resource "aws_db_subnet_group" "sql_subnet_group" {
+    name       = "postgresubgroup"
+    subnet_ids = [aws_subnet.subnet1.id]
+
+    tags = {
+        Name = "SQL server subnet group"
+    }
+}
 
 resource "aws_db_instance" "beans-wechat-rds" {
   allocated_storage = 20
@@ -100,6 +108,7 @@ resource "aws_db_instance" "beans-wechat-rds" {
   publicly_accessible= false
   identifier = "beans-wechat"
   multi_az = false
+  db_subnet_group_name = aws_db_subnet_group.sql_subnet_group.name
   vpc_security_group_ids = [aws_security_group.database_sg.id]
 }
 
