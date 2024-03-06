@@ -121,11 +121,11 @@ resource "aws_elastic_beanstalk_environment" "elasticbeanstalk" {
     value     = aws_vpc.beans_wechat_vpc.id
   }
 
-  setting {
+  /*setting {
     namespace = "aws:ec2:vpc"
     name      = "Subnets"
-    value     = aws_subnet.subnet1[0]
-  }
+    value     = aws_subnet.subnet1.
+  }*/
 
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
