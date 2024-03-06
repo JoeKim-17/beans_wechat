@@ -137,14 +137,20 @@ resource "aws_elastic_beanstalk_environment" "beans-wechat-elastic-beanstalk-env
 
   setting {
     namespace = "aws:ec2:vpc"
+    name      = "AssociatePublicIpAddress"
+    value     = true
+  }
+
+  setting {
+    namespace = "aws:ec2:vpc"
     name      = "Subnets"
-    value     = var.PUB_SUB1_CIDR
+    value     = "${aws_subnet.subnet1.id},${aws_subnet.subnet2.id}"
   }
 
   setting {
     namespace = "aws:ec2:vpc"
     name      = "ELBSubnets"
-    value     = var.PUB_SUB1_CIDR
+    value     = "${aws_subnet.subnet1.id},${aws_subnet.subnet2.id}"
   }
 
   setting {
@@ -165,5 +171,5 @@ resource "aws_elastic_beanstalk_environment" "beans-wechat-elastic-beanstalk-env
     value     = "200"
   }
 
-  depends_on = [aws_security_group.wechat-beans-instance-sg, aws_db_instance.beans-wechat-rds]
+  depends_on = [aws_security_group.wechat-beans-instance-sg, aws_security_group.database_sg]
 }
