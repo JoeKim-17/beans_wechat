@@ -28,18 +28,18 @@ jobs:
 
             - uses: hashicorp/setup-terraform@v3
             - name: Terraform Init
-              working-directory: Infrastructure
+              working-directory: ./Infrastructure
               run: terraform init
 
             - uses: hashicorp/setup-terraform@v3
             - name: Terraform Plan
               id: plan
-              working-directory: Infrastructure
+              working-directory: ./Infrastructure
               run: terraform plan
 
             - uses: hashicorp/setup-terraform@v3
             - name: Terraform Apply
-              working-directory: Infrastructure
+              working-directory: ./Infrastructure
               run: terraform apply -auto-approve
 
 
