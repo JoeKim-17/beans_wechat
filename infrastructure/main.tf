@@ -121,9 +121,10 @@ resource "aws_db_instance" "beans-wechat-rds" {
 resource "aws_elastic_beanstalk_application" "wechat-beans-beanstalk-app" {
   name        = "beans-wechat-application"
   description = "beanstalk-application for beans wechat"
+  depends_on = [aws_elastic_beanstalk_environment.beans-wechat-elastic-beanstalk-env]
 }
 
-resource "aws_elastic_beanstalk_environment" "elasticbeanstalk" {
+resource "aws_elastic_beanstalk_environment" "beans-wechat-elastic-beanstalk-env" {
   name                = "beans-wechat-elastic-beanstalk-env"
   application         = aws_elastic_beanstalk_application.wechat-beans-beanstalk-app.name
   solution_stack_name = "64bit Amazon Linux 2023 v4.2.1 running Corretto 21"
@@ -165,5 +166,5 @@ resource "aws_elastic_beanstalk_environment" "elasticbeanstalk" {
     value     = "200"
   }
 
-  depends_on = [aws_security_group.wechat-beans-instance-sg, aws_subnet.subnet1]
+  depends_on = [aws_security_group.wechat-beans-instance-sg, aws_db_instance.beans-wechat-rds]
 }
