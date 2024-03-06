@@ -105,13 +105,14 @@ resource "aws_db_subnet_group" "sql_subnet_group" {
 
 resource "aws_db_instance" "beans-wechat-rds" {
   allocated_storage = 20
+  db_name = "beanswechat"
   storage_type = "gp2"
   engine = "sqlserver-ex"
   instance_class = "db.t3.micro"
   username = jsondecode(data.aws_secretsmanager_secret_version.creds.secret_string)["username"]
   password = jsondecode(data.aws_secretsmanager_secret_version.creds.secret_string)["password"]
   skip_final_snapshot = true // required to destroy
-  publicly_accessible= false
+  publicly_accessible= true
   identifier = "beans-wechat"
   multi_az = false
   db_subnet_group_name = aws_db_subnet_group.sql_subnet_group.name
