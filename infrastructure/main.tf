@@ -1,8 +1,6 @@
 # Create a VPC
 resource "aws_vpc" "beans_wechat_vpc" {
   cidr_block = var.VPC_CIDR
-  azs = [var.ZONE1]
-  public_subnets = [var.PUB_SUB1_CIDR]
 }
 
 #Internet gateway
