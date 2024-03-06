@@ -25,7 +25,7 @@ resource "aws_subnet" "subnet1" {
   availability_zone = var.ZONE1
 }
 
-resource "aws_subnet" "subnet1" {
+resource "aws_subnet" "subnet2" {
   vpc_id     = aws_vpc.beans_wechat_vpc.id
   cidr_block = var.PUB_SUB2_CIDR
   availability_zone = var.ZONE2
@@ -96,7 +96,7 @@ resource "aws_security_group" "wechat-beans-instance-sg" {
 
 resource "aws_db_subnet_group" "sql_subnet_group" {
     name       = "postgresubgroup"
-    subnet_ids = [aws_subnet.subnet1.id]
+    subnet_ids = [aws_subnet.subnet1.id, aws_subnet.subnet2.id]
 
     tags = {
         Name = "SQL server subnet group"
