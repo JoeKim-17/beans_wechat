@@ -121,7 +121,6 @@ resource "aws_db_instance" "beans-wechat-rds" {
 resource "aws_elastic_beanstalk_application" "wechat-beans-beanstalk-app" {
   name        = "beans-wechat-application"
   description = "beanstalk-application for beans wechat"
-  depends_on = [aws_elastic_beanstalk_environment.beans-wechat-elastic-beanstalk-env]
 }
 
 resource "aws_elastic_beanstalk_environment" "beans-wechat-elastic-beanstalk-env" {
