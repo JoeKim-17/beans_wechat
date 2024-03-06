@@ -111,7 +111,7 @@ resource "aws_db_instance" "beans-wechat-rds" {
   username = jsondecode(data.aws_secretsmanager_secret_version.creds.secret_string)["username"]
   password = jsondecode(data.aws_secretsmanager_secret_version.creds.secret_string)["password"]
   skip_final_snapshot = true // required to destroy
-  publicly_accessible= true
+  publicly_accessible= false
   identifier = "beans-wechat"
   multi_az = false
   db_subnet_group_name = aws_db_subnet_group.sql_subnet_group.name
