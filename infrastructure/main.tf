@@ -120,11 +120,17 @@ resource "aws_elastic_beanstalk_environment" "elasticbeanstalk" {
     value     = aws_vpc.beans_wechat_vpc.id
   }
 
-  /*setting {
+  setting {
     namespace = "aws:ec2:vpc"
     name      = "Subnets"
-    value     = aws_subnet.subnet1.
-  }*/
+    value     = var.PUB_SUB1_CIDR
+  }
+
+  setting {
+    namespace = "aws:ec2:vpc"
+    name      = "ELBSubnets"
+    value     = var.PUB_SUB1_CIDR
+  }
 
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
