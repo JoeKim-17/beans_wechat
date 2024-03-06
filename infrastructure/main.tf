@@ -142,6 +142,12 @@ resource "aws_elastic_beanstalk_environment" "beans-wechat-elastic-beanstalk-env
   }
 
   setting {
+    namespace = "aws:autoscaling:launchconfiguration"
+    name      = "IamInstanceProfile"
+    value     = "aws-elasticbeanstalk-ec2-role"
+  }
+
+  setting {
     namespace = "aws:ec2:vpc"
     name      = "Subnets"
     value     = "${aws_subnet.subnet1.id},${aws_subnet.subnet2.id}"
