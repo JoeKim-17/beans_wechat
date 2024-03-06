@@ -50,4 +50,3 @@ FOREIGN KEY (ChatId)  REFERENCES Chat(ChatId);
 
 ALTER TABLE Message
 ADD CONSTRAINT CheckContentLength CHECK (LENGTH(Content) <= 4096);
-
