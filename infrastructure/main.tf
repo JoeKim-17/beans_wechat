@@ -99,7 +99,7 @@ resource "aws_db_instance" "wechat_beans_rds" {
   skip_final_snapshot = true // required to destroy
   publicly_accessible= false
   identifier = "beans-wechat"
-  db_name = "beans_wechat_db"
+  db_name = jsondecode(data.aws_secretsmanager_secret_version.creds.secret_string)["dbName"]
   multi_az = false
   vpc_security_group_ids = [aws_security_group.database_sg.id]
 }
