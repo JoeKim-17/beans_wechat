@@ -19,7 +19,7 @@ jobs:
         runs-on: ubuntu-latest
         defaults:
           run:
-            working-directory: Infrastructure
+            working-directory: ${{ github.workspace }}/Infrastructure
         steps:
             - uses: actions/checkout@v2
             - uses: aws-actions/configure-aws-credentials@v4
