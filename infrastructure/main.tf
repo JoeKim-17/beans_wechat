@@ -105,7 +105,6 @@ resource "aws_db_subnet_group" "sql_subnet_group" {
 
 resource "aws_db_instance" "beans-wechat-rds" {
   allocated_storage = 20
-  db_name = "beanswechat"
   storage_type = "gp2"
   engine = "sqlserver-ex"
   instance_class = "db.t3.micro"
