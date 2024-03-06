@@ -1,6 +1,8 @@
 # Create a VPC
 resource "aws_vpc" "beans_wechat_vpc" {
   cidr_block = var.VPC_CIDR
+  azs = [var.ZONE1]
+  public_subnets = [var.PUB_SUB1_CIDR]
 }
 
 #Internet gateway
@@ -10,7 +12,7 @@ resource "aws_internet_gateway" "gw" {
 
 #Route table
 resource "aws_route_table" "route_table" {
-  vpc_id = aws_vpc.beans_wechat_vpc.id
+  vpc_id = aws_vpc.beans_wechat_vpc.vpc_id
 
   route {
     cidr_block = "0.0.0.0/0"
@@ -20,7 +22,7 @@ resource "aws_route_table" "route_table" {
 
 # Create Subnet 1
 resource "aws_subnet" "subnet1" {
-  vpc_id     = aws_vpc.beans_wechat_vpc.id
+  vpc_id     = aws_vpc.beans_wechat_vpc.vpc_id
   cidr_block = var.PUB_SUB1_CIDR
   availability_zone = var.ZONE1
 }
@@ -49,14 +51,14 @@ resource "aws_security_group" "database_sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-  vpc_id = aws_vpc.beans_wechat_vpc.id
+  vpc_id = aws_vpc.beans_wechat_vpc.vpc_id
 }
 
 # Elastic beanstalk security group
 resource "aws_security_group" "wechat-beans-instance-sg" {
   name        = "webserver_sg"
   description = "Allow inbound SSH and HTTP traffic"
-  vpc_id      = aws_vpc.beans_wechat_vpc.id
+  vpc_id      = aws_vpc.beans_wechat_vpc.vpc_id
 
   ingress {
     from_port   = 22
@@ -117,7 +119,7 @@ resource "aws_elastic_beanstalk_environment" "elasticbeanstalk" {
   setting {
     namespace = "aws:ec2:vpc"
     name      = "VPCId"
-    value     = aws_vpc.beans_wechat_vpc.id
+    value     = aws_vpc.beans_wechat_vpc.vpc_id
   }
 
   setting {
