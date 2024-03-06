@@ -1,4 +1,4 @@
 
 data "aws_secretsmanager_secret_version" "creds" {
-  secret_id = "dbcreds"
+  secret_id = "Beans-wechat-database"
 }

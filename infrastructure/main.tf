@@ -55,7 +55,7 @@ resource "aws_elastic_beanstalk_application" "beanstalk_application" {
 
 resource "aws_elastic_beanstalk_environment" "elasticbeanstalk" {
   name                = "beans-elastic-beanstalk"
-  application         = aws_elastic_beanstalk_application.tftest.name
+  application         = aws_elastic_beanstalk_application.beanstalk_application.name
   solution_stack_name = "64bit Amazon Linux 2015.03 v2.0.3 running Go 1.4"
 
   setting {
