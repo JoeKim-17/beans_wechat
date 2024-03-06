@@ -35,10 +35,9 @@ jobs:
                     audience: sts.amazonaws.com
 
             - uses: hashicorp/setup-terraform@v3
-
             - name: Terraform Init
               working-directory: "Infrastructure"
-                    run: terraform init
+              run: terraform init
 
             - name: Terraform Plan
               id: plan
