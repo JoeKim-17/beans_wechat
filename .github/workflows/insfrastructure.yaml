@@ -17,6 +17,9 @@ permissions:
 jobs:
     ConfigureAwsAndTerraform:
         runs-on: ubuntu-latest
+        defaults:
+          run:
+            working-directory: Infrastructure
         steps:
             - uses: actions/checkout@v2
             - uses: aws-actions/configure-aws-credentials@v4
@@ -28,18 +31,15 @@ jobs:
 
             - uses: hashicorp/setup-terraform@v3
             - name: Terraform Init
-              working-directory: ./Infrastructure
               run: terraform init
 
             - uses: hashicorp/setup-terraform@v3
             - name: Terraform Plan
               id: plan
-              working-directory: ./Infrastructure
               run: terraform plan
 
             - uses: hashicorp/setup-terraform@v3
             - name: Terraform Apply
-              working-directory: ./Infrastructure
               run: terraform apply -auto-approve
 
 
