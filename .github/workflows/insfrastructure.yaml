@@ -23,6 +23,11 @@ jobs:
         steps:
             - name: Check out code
               uses: actions/checkout@v2
+
+            - name: github path
+              run: |
+                ls ${{github.workspace}}
+
             - name: Configure AWS credentials
               uses: aws-actions/configure-aws-credentials@v4
               with:
