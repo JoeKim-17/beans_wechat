@@ -18,11 +18,17 @@ resource "aws_route_table" "route_table" {
   }
 }
 
-# Create Subnet 1
+# Create Subnets
 resource "aws_subnet" "subnet1" {
   vpc_id     = aws_vpc.beans_wechat_vpc.id
   cidr_block = var.PUB_SUB1_CIDR
   availability_zone = var.ZONE1
+}
+
+resource "aws_subnet" "subnet1" {
+  vpc_id     = aws_vpc.beans_wechat_vpc.id
+  cidr_block = var.PUB_SUB2_CIDR
+  availability_zone = var.ZONE2
 }
 
 #Route table association
