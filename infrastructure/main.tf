@@ -89,7 +89,7 @@ resource "aws_security_group" "wechat-beans-instance-sg" {
 }
 
 
-resource "aws_db_instance" "default" {
+resource "aws_db_instance" "beans-wechat-rds" {
   allocated_storage = 20
   storage_type = "gp2"
   engine = "sqlserver-ex"
@@ -150,5 +150,5 @@ resource "aws_elastic_beanstalk_environment" "elasticbeanstalk" {
     value     = "200"
   }
 
-  depends_on = [aws_security_group.wechat-beans-instance-sg]
+  depends_on = [aws_security_group.wechat-beans-instance-sg, aws_subnet.subnet1]
 }
