@@ -89,7 +89,7 @@ resource "aws_security_group" "wechat-beans-instance-sg" {
 }
 
 
-resource "aws_db_instance" "wechat_beans_rds" {
+resource "aws_db_instance" "default" {
   allocated_storage = 20
   storage_type = "gp2"
   engine = "sqlserver-ex"
@@ -112,7 +112,7 @@ resource "aws_elastic_beanstalk_application" "wechat-beans-beanstalk-app" {
 resource "aws_elastic_beanstalk_environment" "elasticbeanstalk" {
   name                = "beans-wechat-elastic-beanstalk-env"
   application         = aws_elastic_beanstalk_application.wechat-beans-beanstalk-app.name
-  solution_stack_name = "64bit Amazon Linux 2 v3.5.1 running Corretto 21"
+  solution_stack_name = "64bit Amazon Linux 2023 v4.2.1 running Corretto 21"
   cname_prefix        = "java-wechat-beans-app"
 
   setting {
