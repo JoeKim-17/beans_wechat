@@ -37,11 +37,17 @@ resource "aws_subnet" "subnet2" {
 resource "aws_route_table_association" "route_table_asso" {
   subnet_id      = aws_subnet.subnet1.id
   route_table_id = aws_route_table.route_table.id
+}
+
+resource "aws_route_table_association" "route_table_asso1" {
+  subnet_id      = aws_subnet.subnet2.id
+  route_table_id = aws_route_table.route_table.id
 } 
 
 # Create a security group
 resource "aws_security_group" "database_sg" {
   name        = "database-sg"
+  description = "SQL server security group"
   description = "SQL server security group"
 
   ingress {
