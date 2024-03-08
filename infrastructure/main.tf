@@ -48,7 +48,6 @@ resource "aws_route_table_association" "route_table_asso1" {
 resource "aws_security_group" "database_sg" {
   name        = "database-sg"
   description = "SQL server security group"
-  description = "SQL server security group"
 
   ingress {
     from_port   = 1433
