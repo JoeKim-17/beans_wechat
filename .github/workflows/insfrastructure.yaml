@@ -3,7 +3,7 @@ name: AWS-Infrastructure
 on:
   push:
     branches:
-      - tshego/feat/infrastucture
+      - main
 
 env:
   AWS_REGION: "eu-west-1"
@@ -55,7 +55,7 @@ jobs:
             - name: Continuous Integration Flyway Clean Migrate
               run: >-
                 docker run --rm
-                --volume ${{ github.workspace }}/Database/migrations:/flyway/sql:ro
+                --volume ${{ github.workspace }}/Databases/migrations:/flyway/sql:ro
                 redgate/flyway
                 -licenseKey="${{ secrets.FLYWAY_LICENSE_KEY }}"
                 -url="${{ secrets.DB_URL }}"
