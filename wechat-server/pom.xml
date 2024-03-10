@@ -27,7 +27,111 @@
       <artifactId>spring-boot-starter-web</artifactId>
       <version>3.2.3</version>
     </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>5.9.0-M1</version>
+      <scope>test</scope>
+    </dependency>
 
   </dependencies>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>3.2.0</version>
+          <configuration>
+            <archive>
+              <manifest>
+                <mainClass>com.bbd.Client</mainClass>
+              </manifest>
+            </archive>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jlink-plugin</artifactId>
+          <version>3.2.0</version>
+          <configuration>
+            <addModules>
+              <addModule>spring.boot.autoconfigure</addModule>
+            </addModules>
+            <modulepath>
+              <dependencysets>
+                <dependencyset>
+                  <includeoutput>true</includeoutput>
+                  <excludeautomatic>true</excludeautomatic>
+                </dependencyset>
+              </dependencysets>
+            </modulepath>
+            <noheaderfiles>true</noheaderfiles>
+            <nomanpages>true</nomanpages>
+            <stripdebug>true</stripdebug>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jlink-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>verify</phase>
+            <goals>
+              <goal>jlink</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.8.0</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+            <id>compile</id>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- <plugin>
+        <groupId>org.asciidoctor</groupId>
+        <artifactId>asciidoctor-maven-plugin</artifactId>
+        <version>2.2.1</version>
+        <executions>
+          <execution>
+            <id>generate-docs</id>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>process-asciidoc</goal>
+            </goals>
+            <configuration>
+              <backend>html</backend>
+              <doctype>book</doctype>
+            </configuration>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>org.springframework.restdocs</groupId>
+            <artifactId>spring-restdocs-asciidoctor</artifactId>
+            <version>${spring-restdocs.version}</version>
+          </dependency>
+        </dependencies>
+      </plugin> -->
+    </plugins>
+  </build>
 
 </project>
