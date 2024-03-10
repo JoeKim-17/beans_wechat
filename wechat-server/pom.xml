@@ -61,9 +61,9 @@
           <artifactId>maven-jlink-plugin</artifactId>
           <version>3.2.0</version>
           <configuration>
-            <addModules>
+            <!-- <addModules>
               <addModule>spring.boot.autoconfigure</addModule>
-            </addModules>
+            </addModules> -->
             <modulepath>
               <dependencysets>
                 <dependencyset>
