@@ -112,5 +112,6 @@ jobs:
             aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             application_name: beans-wechat-application
             environment_name: beans-wechat-elastic-beanstalk-env
+            version_label: ${{ github.run_number }}
             region: ${{ env.AWS_REGION }}
             deployment_package: wechat-1.0-SNAPSHOT.jar
