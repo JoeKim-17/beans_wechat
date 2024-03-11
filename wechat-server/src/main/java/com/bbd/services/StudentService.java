@@ -11,7 +11,7 @@ import java.util.Collection;
 @Service
 public class StudentService {
 
-    @Autowired
+    @Autowired(required = false)
     @Qualifier("mssql")
     private StudentDao studentDao;
 
