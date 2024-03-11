@@ -140,7 +140,7 @@ resource "aws_elastic_beanstalk_environment" "beans-wechat-elastic-beanstalk-env
   name                = "beans-wechat-elastic-beanstalk-env"
   application         = aws_elastic_beanstalk_application.wechat-beans-beanstalk-app.name
   solution_stack_name = "64bit Amazon Linux 2023 v4.2.1 running Corretto 21"
-  cname_prefix        = "java-wechat-beans-app"
+  cname_prefix        = "wechat-beans-app"
 
   setting {
     namespace = "aws:ec2:vpc"
