@@ -11,8 +11,8 @@ import java.util.Collection;
 @Service
 public class StudentService {
 
-    @Autowired
-    @Qualifier("mysql")
+    @Autowired(required = false)
+    @Qualifier("mssql")
     private StudentDao studentDao;
 
     public Collection<Student> getAllStudents(){
