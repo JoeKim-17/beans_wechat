@@ -73,10 +73,6 @@ jobs:
             distribution: 'temurin'
             java-version: '21'
   
-        - name: Copy Backend Connection Credentials
-          run: |
-            mv configProperties src/main/resources/application.properties
-  
         - name: Run sed command to update backend credentials
           run: |
             sed -i 's/^spring.datasource.url.*/spring.datasource.url=${{secrets.DB_URL}}/' src/main/resources/application.properties
