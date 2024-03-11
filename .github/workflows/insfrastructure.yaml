@@ -89,7 +89,7 @@ jobs:
           uses: actions/upload-artifact@v3
           with:
             name: BeansWechat_Artifacts
-            path: target/wechat-1.0-SNAPSHOT.jar
+            path: wechat-server/src/target/wechat-1.0-SNAPSHOT.jar
   
     ServerDeployment:
       needs: ServerBuild
