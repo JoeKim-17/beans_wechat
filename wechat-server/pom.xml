@@ -46,6 +46,19 @@
       <plugins>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jlink-plugin</artifactId>
+          <version>3.1.0</version>
+          <configuration>
+            <!-- configure as you please -->
+            <noManPages>true</noManPages>
+            <noHeaderFiles>true</noHeaderFiles>
+            <stripDebug>true</stripDebug>
+            <compress>2</compress>
+            <verbose>true</verbose>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-jar-plugin</artifactId>
           <version>3.2.0</version>
           <configuration>
@@ -56,43 +69,11 @@
             </archive>
           </configuration>
         </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-jlink-plugin</artifactId>
-          <version>3.2.0</version>
-          <configuration>
-            <!-- <addModules>
-              <addModule>spring.boot.autoconfigure</addModule>
-            </addModules> -->
-            <modulepath>
-              <dependencysets>
-                <dependencyset>
-                  <includeoutput>true</includeoutput>
-                  <excludeautomatic>true</excludeautomatic>
-                </dependencyset>
-              </dependencysets>
-            </modulepath>
-            <noheaderfiles>true</noheaderfiles>
-            <nomanpages>true</nomanpages>
-            <stripdebug>true</stripdebug>
-          </configuration>
-        </plugin>
+
       </plugins>
     </pluginManagement>
-    
+
     <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jlink-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>verify</phase>
-            <goals>
-              <goal>jlink</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -106,31 +87,6 @@
           </execution>
         </executions>
       </plugin>
-      <!-- <plugin>
-        <groupId>org.asciidoctor</groupId>
-        <artifactId>asciidoctor-maven-plugin</artifactId>
-        <version>2.2.1</version>
-        <executions>
-          <execution>
-            <id>generate-docs</id>
-            <phase>prepare-package</phase>
-            <goals>
-              <goal>process-asciidoc</goal>
-            </goals>
-            <configuration>
-              <backend>html</backend>
-              <doctype>book</doctype>
-            </configuration>
-          </execution>
-        </executions>
-        <dependencies>
-          <dependency>
-            <groupId>org.springframework.restdocs</groupId>
-            <artifactId>spring-restdocs-asciidoctor</artifactId>
-            <version>${spring-restdocs.version}</version>
-          </dependency>
-        </dependencies>
-      </plugin> -->
     </plugins>
   </build>
 

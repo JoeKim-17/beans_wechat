@@ -1,11 +1,8 @@
 package com.bbd;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-@SpringBootApplication
+// import org.springframework.boot.SpringApplication;
 public class Main {
   public static void main(String[] args) {
-    SpringApplication.run(Main.class, args);
+    // SpringApplication.run(Main.class, args);
   }
 }
