@@ -53,13 +53,6 @@
 			<version>3.0.2</version>
 		</dependency>
 
-    <dependency>
-      <groupId>com.microsoft.sqlserver</groupId>
-      <artifactId>mssql-jdbc</artifactId>
-      <version>6.4.0.jre8</version>
-      <scope>runtime</scope>
-    </dependency>
-
   </dependencies>
 
   <build>
@@ -67,6 +60,11 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
+        <version>3.0.2</version>
+        	<configuration>
+					  <mainClass>com.bbd.Main</mainClass>
+            <finalName>beanchat-app</finalName>
+				</configuration>
       </plugin>
     </plugins>
 
