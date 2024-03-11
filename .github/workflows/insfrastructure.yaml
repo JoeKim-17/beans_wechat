@@ -3,7 +3,7 @@ name: AWS-Infrastructure
 on:
   push:
     branches:
-      - main
+      - tshego/bug/failing-deployment
 
 env:
   AWS_REGION: "eu-west-1"
