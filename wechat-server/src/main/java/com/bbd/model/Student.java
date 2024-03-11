@@ -1,5 +1,4 @@
-package com.bbd.models;
-
+package com.bbd.model;
 
 public class Student {
 

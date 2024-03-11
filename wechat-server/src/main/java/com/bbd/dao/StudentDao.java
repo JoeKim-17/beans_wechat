@@ -1,7 +1,6 @@
 package com.bbd.dao;
 
-import com.bbd.models.Student;
-
+import com.bbd.model.Student;
 import java.util.Collection;
 
 public interface StudentDao {
