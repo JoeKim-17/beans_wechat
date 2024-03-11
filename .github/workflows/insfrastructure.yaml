@@ -70,7 +70,7 @@ jobs:
         - name: Setup Java JDK
           uses: actions/setup-java@v4
           with:
-            distribution: 'openjdk'
+            distribution: 'temurin'
             java-version: '21'
   
         - name: Copy Backend Connection Credentials
