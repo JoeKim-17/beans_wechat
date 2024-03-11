@@ -75,10 +75,6 @@ jobs:
           with:
             distribution: 'temurin'
             java-version: '21'
-
-        - name: Copy Backend Connection Credentials
-          run: |
-            mv configProperties src/main/resources/application.properties
   
         - name: Run sed command to update backend credentials
           run: |
