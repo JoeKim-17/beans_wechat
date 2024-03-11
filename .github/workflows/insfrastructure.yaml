@@ -3,7 +3,7 @@ name: AWS-Infrastructure
 on:
   push:
     branches:
-      - main
+      - tshego/feat/deployments
 
 env:
   AWS_REGION: "eu-west-1"
@@ -61,3 +61,55 @@ jobs:
                 -url="${{ secrets.DB_URL }}"
                 -user="${{ secrets.DB_USERNAME }}"
                 -password="${{ secrets.DB_PASSWORD }}" migrate
+
+    ServerBuild:
+      needs: ConfigureAwsAndTerraform
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v4
+        - name: Setup Java JDK
+          uses: actions/setup-java@v4
+          with:
+            distribution: 'openjdk'
+            java-version: '21'
+  
+        - name: Copy Backend Connection Credentials
+          run: |
+            mv configProperties src/main/resources/application.properties
+  
+        - name: Run sed command to update backend credentials
+          run: |
+            sed -i 's/^spring.datasource.url.*/spring.datasource.url=${{secrets.DB_URL}}/' src/main/resources/application.properties
+            sed -i 's/^spring.datasource.username.*/spring.datasource.username=${{secrets.DB_USERNAME}}/' src/main/resources/application.properties
+            sed -i 's/^spring.datasource.password.*/spring.datasource.password=${{secrets.DB_PASSWORD}}/' src/main/resources/application.properties
+  
+        - name: Build with Maven
+          run: mvn -B package -DskipTests -f pom.xml
+        
+        - name: Upload Maven Artifact
+          uses: actions/upload-artifact@v3
+          with:
+            name: BeansWechat_Artifacts
+            path: target/beanswechat-v1.jar
+  
+    ServerDeployment:
+      needs: ServerBuild
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v4
+  
+        - name: Download Artifacts
+          uses: actions/download-artifact@v3
+          with:
+            name: BeansWechat_Artifacts
+  
+        - name: Deploy to EB
+          uses: einaregilsson/beanstalk-deploy@v21
+          with:
+            aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            application_name: beans-wechat-application
+            environment_name: beans-wechat-elastic-beanstalk-env
+            version_label: ${{github.run_number}}
+            region: ${{env.AWS_REGION}}
+            deployment_package: beanswechat-v1.jar
