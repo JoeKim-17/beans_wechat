@@ -85,8 +85,20 @@ resource "aws_security_group" "wechat-beans-instance-sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
   ingress {
+    from_port   = 80
+    to_port     = 8888
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
     from_port   = 443
     to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    from_port   = 5000
+    to_port     = 5000
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -134,7 +146,7 @@ resource "aws_elastic_beanstalk_environment" "beans-wechat-elastic-beanstalk-env
   name                = "beans-wechat-elastic-beanstalk-env"
   application         = aws_elastic_beanstalk_application.wechat-beans-beanstalk-app.name
   solution_stack_name = "64bit Amazon Linux 2023 v4.2.1 running Corretto 21"
-  cname_prefix        = "java-wechat-beans-app"
+  cname_prefix        = "wechat-beans-app"
 
   setting {
     namespace = "aws:ec2:vpc"
@@ -164,6 +176,12 @@ resource "aws_elastic_beanstalk_environment" "beans-wechat-elastic-beanstalk-env
     namespace = "aws:ec2:vpc"
     name      = "ELBSubnets"
     value     = "${aws_subnet.subnet1.id},${aws_subnet.subnet2.id}"
+  }
+
+  setting {
+    namespace = "aws:elbv2:loadbalancer"
+    name      = "SecurityGroups"
+    value     = aws_security_group.wechat-beans-instance-sg.id
   }
 
   setting {
