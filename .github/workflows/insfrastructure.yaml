@@ -89,7 +89,7 @@ jobs:
           uses: actions/upload-artifact@v3
           with:
             name: BeansWechat_Artifacts
-            path: target/beanswechat-v1.jar
+            path: target/wechat-1.0-SNAPSHOT.jar
   
     ServerDeployment:
       needs: ServerBuild
@@ -114,4 +114,4 @@ jobs:
             environment_name: beans-wechat-elastic-beanstalk-env
             version_label: ${{ github.run_number }}
             region: ${{ env.AWS_REGION }}
-            deployment_package: beanswechat-v1.jar
+            deployment_package: wechat-1.0-SNAPSHOT.jar
