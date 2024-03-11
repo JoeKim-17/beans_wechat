@@ -65,19 +65,21 @@ jobs:
     ServerBuild:
       needs: ConfigureAwsAndTerraform
       runs-on: ubuntu-latest
+      defaults:
+        run:
+          working-directory: wechat-server
       steps:
         - uses: actions/checkout@v4
         - name: Setup Java JDK
           uses: actions/setup-java@v4
           with:
-            distribution: 'temurin'
             java-version: '21'
   
         - name: Run sed command to update backend credentials
           run: |
-            sed -i 's/^spring.datasource.url.*/spring.datasource.url=${{secrets.DB_URL}}/' src/main/resources/application.properties
-            sed -i 's/^spring.datasource.username.*/spring.datasource.username=${{secrets.DB_USERNAME}}/' src/main/resources/application.properties
-            sed -i 's/^spring.datasource.password.*/spring.datasource.password=${{secrets.DB_PASSWORD}}/' src/main/resources/application.properties
+            sed -i 's/^spring.datasource.url.*/spring.datasource.url=${{ secrets.DB_URL }}/' src/main/resources/application.properties
+            sed -i 's/^spring.datasource.username.*/spring.datasource.username=${{ secrets.DB_USERNAME }}/' src/main/resources/application.properties
+            sed -i 's/^spring.datasource.password.*/spring.datasource.password=${{ secrets.DB_PASSWORD }}/' src/main/resources/application.properties
   
         - name: Build with Maven
           run: mvn -B package -DskipTests -f pom.xml
@@ -91,6 +93,9 @@ jobs:
     ServerDeployment:
       needs: ServerBuild
       runs-on: ubuntu-latest
+      defaults:
+        run:
+          working-directory: wechat-server
       steps:
         - uses: actions/checkout@v4
   
