@@ -90,6 +90,12 @@ resource "aws_security_group" "wechat-beans-instance-sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+  ingress {
+    from_port   = 5000
+    to_port     = 5000
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
   egress {
     from_port   = 0
     to_port     = 0
@@ -164,6 +170,12 @@ resource "aws_elastic_beanstalk_environment" "beans-wechat-elastic-beanstalk-env
     namespace = "aws:ec2:vpc"
     name      = "ELBSubnets"
     value     = "${aws_subnet.subnet1.id},${aws_subnet.subnet2.id}"
+  }
+
+  setting {
+    namespace = "aws:elbv2:loadbalancer"
+    name      = "SecurityGroups"
+    value     = aws_security_group.wechat-beans-instance-sg.id
   }
 
   setting {
