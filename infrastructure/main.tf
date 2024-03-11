@@ -126,7 +126,7 @@ resource "aws_db_instance" "beans-wechat-rds" {
   allocated_storage = 20
   storage_type = "gp2"
   engine = "sqlserver-ex"
-  instance_class = "db.t3.micro"
+  instance_class = "db.t2.micro"
   username = jsondecode(data.aws_secretsmanager_secret_version.creds.secret_string)["username"]
   password = jsondecode(data.aws_secretsmanager_secret_version.creds.secret_string)["password"]
   skip_final_snapshot = true // required to destroy
