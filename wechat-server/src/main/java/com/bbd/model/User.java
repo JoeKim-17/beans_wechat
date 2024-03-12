@@ -2,50 +2,50 @@ package com.bbd.model;
 
 public class User {
 
-	private int userID;
-	private String username;
-	private String email;
-	private String mobile;
+	private int UserId;
+	private String UserName;
+	private String EmailAddress;
+	private String MobileNo;
 
-	public User(int userID, String username, String email, String mobile) {
-		this.userID = userID;
-		this.username = username;
-		this.email = email;
-		this.mobile = mobile;
+	public User(int UserId, String UserName, String EmailAddress, String MobileNo) {
+		this.UserId = UserId;
+		this.UserName = UserName;
+		this.EmailAddress = EmailAddress;
+		this.MobileNo = MobileNo;
 	}
 
 	public User() {}
 
-	public int getUserID() {
-		return userID;
+	public int getUserId() {
+		return UserId;
 	}
 
-	public void setUserID(int userID) {
-		this.userID = userID;
+	public void setUserId(int UserId) {
+		this.UserId = UserId;
 	}
 
-	public String getUsername() {
-		return username;
+	public String getUserName() {
+		return UserName;
 	}
 
-	public void setUsername(String username) {
-		this.username = username;
+	public void setUserName(String UserName) {
+		this.UserName = UserName;
 	}
 
-	public String getEmail() {
-		return email;
+	public String getEmailAddress() {
+		return EmailAddress;
 	}
 
-	public void setEmail(String email) {
-		this.email = email;
+	public void setEmailAddress(String EmailAddress) {
+		this.EmailAddress = EmailAddress;
 	}
 
-	public String getMobile() {
-		return mobile;
+	public String getMobileNo() {
+		return MobileNo;
 	}
 
-	public void setMobile(String mobile) {
-		this.mobile = mobile;
+	public void setMobileNo(String MobileNo) {
+		this.MobileNo = MobileNo;
 	}
 
 }
