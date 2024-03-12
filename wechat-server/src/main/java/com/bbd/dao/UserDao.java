@@ -11,8 +11,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import com.bbd.model.User;
-
-@Repository("mssql")
+@Repository
 public class UserDao {
 
   @Autowired
@@ -42,7 +41,7 @@ public class UserDao {
   }
 
   public User getUserById(int UserId) {
-    final String sql = "SELECT UserId, UserName, EmailAddress, MobileNo FROM Users where UserId = ?";
+    final String sql = "SELECT UserId, UserName, EmailAddress, MobileNo FROM Users WHERE UserId = ?";
     User user = jdbcTemplate.queryForObject(dbQuery + sql, new UserRowMapper(), UserId);
 
     return user;
