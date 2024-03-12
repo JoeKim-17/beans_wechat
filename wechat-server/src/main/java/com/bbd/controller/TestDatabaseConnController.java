@@ -8,7 +8,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 @RestController
-public class DatabaseController {
+public class TestDatabaseConnectionController {
 
   @Autowired
   private DataSource dataSource;
