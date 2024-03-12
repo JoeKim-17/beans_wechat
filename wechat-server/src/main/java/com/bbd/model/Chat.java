@@ -2,40 +2,40 @@ package com.bbd.model;
 
 public class Chat {
 
-  private int chatID;
-  private int senderID;
-  private int receiverID;
+  private int ChatId;
+  private int Sender;
+  private int Receiver;
 
-  public Chat(int chatID, int senderID, int receiverID) {
-    this.chatID = chatID;
-    this.senderID = senderID;
-    this.receiverID = receiverID;
+  public Chat(int ChatId, int Sender, int Receiver) {
+    this.ChatId = ChatId;
+    this.Sender = Sender;
+    this.Receiver = Receiver;
   }
 
   public Chat() {}
 
   public int getChatID() {
-    return chatID;
+    return ChatId;
   }
 
-  public void setChatID(int chatID) {
-    this.chatID = chatID;
+  public void setChatID(int ChatId) {
+    this.ChatId = ChatId;
   }
 
   public int getSenderID() {
-    return senderID;
+    return Sender;
   }
 
-  public void setSenderID(int senderID) {
-    this.senderID = senderID;
+  public void setSenderID(int Sender) {
+    this.Sender = Sender;
   }
 
   public int getReceiverID() {
-    return receiverID;
+    return Receiver;
   }
 
-  public void setReceiverID(int receiverID) {
-    this.receiverID = receiverID;
+  public void setReceiverID(int Receiver) {
+    this.Receiver = Receiver;
   }
 
 }
