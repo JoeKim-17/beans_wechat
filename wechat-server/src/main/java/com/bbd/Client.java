@@ -13,7 +13,18 @@ public class Client {
     private SimpleFormatter formatter = new SimpleFormatter();
 
     public static void main(String[] args) throws SecurityException, IOException {
-        new Client().start();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    new Client().start();
+                } catch (SecurityException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
     }
 
     public void start() throws SecurityException, IOException {
@@ -30,10 +41,13 @@ public class Client {
             "--viewGroup",
             "--help" };
 
+    private String globalUser = "";
+
     private void input() {
+        boolean msgTrigger = false;
         Scanner scanner = new Scanner(System.in);
         System.out.println("Please enter your command");
-        System.out.println("For more commands --help <enter>");
+        System.out.println("Type --help <enter> to see all commands available");
         boolean breakLoop = false;
         while (!breakLoop) {
             try {
@@ -46,23 +60,27 @@ public class Client {
                         break;
                     case "--msg":
                         String user = scanner.next().trim();
+                        globalUser = user;
                         String msg = scanner.nextLine().trim();
-                        System.out.println("Sending to " + user + ":\n" + msg);
+                        System.out.println("Started coversation with " + globalUser);
+                        System.out.println("Sending to " + user + (msg == "" ? ":" : (":\n" + msg)));
+                        msgTrigger = true;
                         break;
                     case "--creategroup":
                         String groupName = scanner.next();
-                        if (scanner.hasNext()) {
-                            scanUsers(scanner);
-                        } else {
+                        String nextLine = scanner.nextLine();
+                        if (nextLine == "") {
                             System.out.println("Enter group members username (separated by spaces)");
-                            scanUsers(scanner);
+                            scanUsers(scanner.nextLine().trim());
+                        } else {
+                            scanUsers(nextLine);
                         }
                         System.out.println("Created group " + groupName);
                         break;
                     case "--help":
                         command = scanner.nextLine().trim();
                         if (command == null || command == "") {
-                            System.out.println(Arrays.toString(commands));
+                            System.out.println("Commands: " + Arrays.toString(commands));
                             System.out.println("For more info: --help <command>");
                         } else {
                             processHelp(scanner, command);
@@ -78,14 +96,20 @@ public class Client {
                     case "--addgroupmember":
                         String group = scanner.next().trim();
                         System.out.println(findGroup(group) ? "Found Group" : "Wrong Group Entered");
-                        scanUsers(scanner);
+                        scanUsers(scanner.nextLine().trim());
                         break;
                     case "--viewgroup":
                         group = scanner.next().trim();
                         System.out.println(group + ": " + viewMembers(group));
                         break;
                     default:
-                        System.err.println("Incorrect Command Entered");
+                        if (command.startsWith("--")) {
+                            System.err.println("Incorrect command entered.");
+                        } else if (msgTrigger) {
+                            System.out.println(processMsg(scanner, command));
+                        } else {
+                            System.err.println("Unknown command entered.\nType --help <enter> to see all commands available");
+                        }
                         break;
                 }
             } catch (Exception e) {
@@ -93,6 +117,10 @@ public class Client {
             }
         }
 
+    }
+
+    private String processMsg(Scanner scanner, String command) {
+        return "Me: " + command.trim() + " " + scanner.nextLine().trim();
     }
 
     private String viewMembers(String group) {
@@ -121,10 +149,10 @@ public class Client {
                 System.out.println("Adds a user to your friend list");
                 System.out.println("--addUser <User>");
                 break;
-            case "signIn":
+            case "signin":
                 System.out.println("Signs in");
                 break;
-            case "addGroupMember":
+            case "addgroupmember":
                 System.out.println("Adds users to a specified group");
                 System.out.println("--addGroupMember <Group Name> <User>[ <User>]");
                 break;
@@ -138,8 +166,8 @@ public class Client {
         }
     }
 
-    private void scanUsers(Scanner scanner) {
-        String users = scanner.nextLine().trim();
+    private void scanUsers(String users) {
+        // String users = scanner.nextLine().trim();
         String[] usersArr = users.split(" ");
         logger.log(Level.WARNING, Arrays.toString(usersArr));
         for (String s : usersArr) {
@@ -147,7 +175,7 @@ public class Client {
         }
     }
 
-    private boolean findUser(String s) {
+    public boolean findUser(String s) {
         return true;
     }
 
