@@ -21,16 +21,6 @@ VALUES
 (7,'Hey please call me'),
 (8,'Its too late');
 
-
-CREATE PROCEDURE InsertUser
-    @UserName NVARCHAR(50),
-    @EmailAddress NVARCHAR(100),
-    @MobileNo NVARCHAR(20)
-AS
-BEGIN
-    INSERT INTO Users (UserName, EmailAddress, MobileNo)
-    VALUES (@UserName, @EmailAddress, @MobileNo
-
 --Using the stored procedures
 EXEC InsertUser
     @UserName = 'Duncan984',
