@@ -41,8 +41,9 @@ public class MessageController {
   }
 
   @RequestMapping(method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-  public void insertMessage(@RequestBody Message message) {
-    messageDao.insertMessageToDb(message);
+  public void insertMessage(@RequestBody String message) {
+    String[] messageStrings = message.split(",");
+    messageDao.insertMessageToDb(new Message(-1, Integer.parseInt(messageStrings[0].trim()), messageStrings[1].trim()));
   }
 
 }

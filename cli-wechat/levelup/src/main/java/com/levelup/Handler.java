@@ -17,8 +17,8 @@ import java.io.IOException;
 public class Handler extends Thread {
     private Scanner scanner;
     private Logger logger;
-    private final String baseURI = "http://wechat-beans-app.eu-west-1.elasticbeanstalk.com";
-    // private final String baseURI = "http://localhost:8080";
+    // private final String baseURI = "http://wechat-beans-app.eu-west-1.elasticbeanstalk.com";
+    private final String baseURI = "http://localhost:8080";
     private String globalUser = "";
     private String username = "";
     private HttpClient client;
@@ -246,24 +246,25 @@ public class Handler extends Thread {
     }
 
     private void startMessage() throws URISyntaxException, IOException, InterruptedException {
-        String user = scanner.next().trim();
-        globalUser = user;
+        globalUser = scanner.next().trim(); 
         String msg = scanner.nextLine().trim();
         System.out.println("Started coversation with " + globalUser);
-        System.out.println("Sending to " + user + (msg == "" ? ":" : (":\nMe:" + msg)));
+        System.out.println("Sending to " + globalUser + (msg == "" ? ":" : (":\nMe:" + msg)));
         HttpResponse<String> response = post("/chats",
                 HttpRequest.BodyPublishers.ofString(username + "," + globalUser));
         System.out.println(response.body());
-        sendMessage();
+        sendMessage(msg);
     }
 
     private void getClientID() throws URISyntaxException, IOException, InterruptedException {
-        clientID = 6;
-        System.out.println(get( "/users", "username", username).body());
-        System.out.println("POST");
+        clientID = Integer.parseInt(get( "/users", "username", username).body());
+        System.out.println(clientID);
+        System.out.println("GET: Client ID");
     }
 
-    private void sendMessage() {
-
+    private void sendMessage(String msg) throws URISyntaxException, IOException, InterruptedException {
+        int chatID = Integer.parseInt(get( "/users", "username", globalUser).body());
+        HttpResponse<String> response =  post("/messages",HttpRequest.BodyPublishers.ofString(chatID+msg));
+        S
     }
 }
