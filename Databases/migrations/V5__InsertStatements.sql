@@ -27,18 +27,6 @@ EXEC InsertUser
     @EmailAddress = 'mkha@gmail.com',
     @MobileNo = '+27769375';	
 	
-EXECUTE InsertChat
-      @4,
-      @6;	  
-	
-EXECUTE InsertChat
-      @Sender= 1,
-      @Receiver = 2;	  	
-	  
-EXECUTE InsertMessage
-      @ChatId = 1,
-      @Content = 'Ziyakahla';	  
-	
 SELECT *
 FROM Users
 

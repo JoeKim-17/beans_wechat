@@ -16,14 +16,14 @@ BEGIN
 END;
 
 --Stored proc for chat table
-CREATE PROCEDURE InsertChat
-    @Sender INT,
-    @Receiver INT
+CREATE PROCEDURE InsertIntoChat
+    @Sender VARCHAR(100), 
+    @Receiver VARCHAR(100)
 AS
 BEGIN
     BEGIN TRY
         INSERT INTO Chat (Sender, Receiver)
-        VALUES (@Sender, @Receiver);
+        VALUES ((SELECT UserId FROM Users WHERE UserName=@Sender),( SELECT UserId FROM Users WHERE UserName= @Receiver));
         PRINT 'Data inserted successfully';
     END TRY
     BEGIN CATCH
