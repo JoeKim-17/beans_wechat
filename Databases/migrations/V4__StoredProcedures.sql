@@ -14,7 +14,7 @@ BEGIN
         PRINT 'Wrong input: ' + ERROR_MESSAGE();
     END CATCH
 END;
-
+GO
 --Stored proc for chat table
 CREATE PROCEDURE InsertIntoChat
     @Sender VARCHAR(100), 
@@ -30,7 +30,9 @@ BEGIN
         -- Handle errors
         PRINT 'Wrong input: ' + ERROR_MESSAGE();
     END CATCH
-END;
+END
+;
+GO
 
 CREATE PROCEDURE InsertMessage
    @ChatId INT,
@@ -46,5 +48,5 @@ BEGIN
         -- Handle errors
         PRINT 'Wrong input: ' + ERROR_MESSAGE();
     END CATCH
-END;
-
+END
+;
