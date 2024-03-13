@@ -13,3 +13,5 @@ On Windows: Click/Run the launcher.bat
 On Linux: Run make_linux.sh
 
 NB: Ensure execute permissions are given
+
+## Database
