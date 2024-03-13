@@ -14,23 +14,25 @@ BEGIN
         PRINT 'Wrong input: ' + ERROR_MESSAGE();
     END CATCH
 END;
-
+GO
 --Stored proc for chat table
-CREATE PROCEDURE InsertChat
-    @Sender INT,
-    @Receiver INT
+CREATE PROCEDURE InsertIntoChat
+    @Sender VARCHAR(100), 
+    @Receiver VARCHAR(100)
 AS
 BEGIN
     BEGIN TRY
         INSERT INTO Chat (Sender, Receiver)
-        VALUES (@Sender, @Receiver);
+        VALUES ((SELECT UserId FROM Users WHERE UserName=@Sender),( SELECT UserId FROM Users WHERE UserName= @Receiver));
         PRINT 'Data inserted successfully';
     END TRY
     BEGIN CATCH
         -- Handle errors
         PRINT 'Wrong input: ' + ERROR_MESSAGE();
     END CATCH
-END;
+END
+;
+GO
 
 CREATE PROCEDURE InsertMessage
    @ChatId INT,
@@ -46,5 +48,5 @@ BEGIN
         -- Handle errors
         PRINT 'Wrong input: ' + ERROR_MESSAGE();
     END CATCH
-END;
-
+END
+;

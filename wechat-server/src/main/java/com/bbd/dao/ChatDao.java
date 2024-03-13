@@ -28,8 +28,8 @@ public class ChatDao {
       Chat chat = new Chat();
 
       chat.setChatID(resultSet.getInt("ChatId"));
-      chat.setSenderID(resultSet.getInt("Sender"));
-      chat.setReceiverID(resultSet.getInt("Receiver"));
+      chat.setSender(resultSet.getString("Sender"));
+      chat.setReceiver(resultSet.getString("Receiver"));
 
       return chat;
     }
@@ -49,10 +49,10 @@ public class ChatDao {
     return chat;
   }
 
-  public void insertChatToDb(String[] chatters) {
-    final String sql = "execute InsertIntoChat @Sender='?', @Receiver='?";
-    final String senderId = chatters[0].trim();
-    final String receiverId = chatters[1].trim();
+  public void insertChatToDb(Chat chat) {
+    final String sql = "INSERT INTO Chat (Sender, Receiver) VALUES (?, ?)";
+    final String senderId = chat.getSender();
+    final String receiverId = chat.getReceiver();
 
     jdbcTemplate.update(dbQuery + sql, new Object[] {senderId, receiverId});
   }
