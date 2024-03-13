@@ -1,6 +1,4 @@
-package com.bbd.model;
-
-import java.sql.Timestamp;
+package com.levelup.model;
 
 public class User {
 
@@ -8,10 +6,6 @@ public class User {
 	private String UserName;
 	private String EmailAddress;
 	private String MobileNo;
-	private Timestamp CreatedAt;
-
-	public User() {
-	}
 
 	public User(int UserId, String UserName, String EmailAddress, String MobileNo) {
 		this.UserId = UserId;
@@ -20,13 +14,7 @@ public class User {
 		this.MobileNo = MobileNo;
 	}
 
-	public User(int UserId, String UserName, String EmailAddress, String MobileNo, Timestamp CreatedAt) {
-		this.UserId = UserId;
-		this.UserName = UserName;
-		this.EmailAddress = EmailAddress;
-		this.MobileNo = MobileNo;
-		this.CreatedAt = CreatedAt;
-	}
+	public User() {}
 
 	public int getUserId() {
 		return UserId;
@@ -60,11 +48,4 @@ public class User {
 		this.MobileNo = MobileNo;
 	}
 
-	public Timestamp getCreatedAt() {
-		return CreatedAt;
-	}
-
-	public void setCreatedAt(Timestamp createdAt) {
-		CreatedAt = createdAt;
-	}
 }

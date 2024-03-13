@@ -1,10 +1,16 @@
 package com.bbd.model;
 
+import java.sql.Timestamp;
+
 public class Chat {
 
   private int ChatId;
   private String Sender;
   private String Receiver;
+  private Timestamp CreatedAt;
+
+  public Chat() {
+  }
 
   public Chat(int ChatId, String Sender, String Receiver) {
     this.ChatId = ChatId;
@@ -12,7 +18,13 @@ public class Chat {
     this.Receiver = Receiver;
   }
 
-  public Chat() {}
+  public Chat(int ChatId, String Sender, String Receiver, Timestamp CreatedAt) {
+    this.ChatId = ChatId;
+    this.Sender = Sender;
+    this.Receiver = Receiver;
+    this.CreatedAt = CreatedAt;
+
+  }
 
   public int getChatID() {
     return ChatId;
@@ -38,4 +50,11 @@ public class Chat {
     this.Receiver = Receiver;
   }
 
+  public Timestamp getCreatedAt() {
+    return CreatedAt;
+  }
+
+  public void setCreatedAt(Timestamp createdAt) {
+    CreatedAt = createdAt;
+  }
 }

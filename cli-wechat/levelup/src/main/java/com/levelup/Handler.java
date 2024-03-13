@@ -1,7 +1,7 @@
 package com.levelup;
 
 import java.io.IOException;
-import java.io.OutputStream;
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
@@ -9,10 +9,16 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.io.IOException;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.levelup.model.*;
+import com.sun.net.httpserver.HttpServer;
 
 public class Handler extends Thread {
     private Scanner scanner;
@@ -21,8 +27,10 @@ public class Handler extends Thread {
     // private final String baseURI = "http://localhost:8080";
     private String globalUser = "";
     private String username = "";
+    private int chatID = -1;
     private HttpClient client;
     private int clientID;
+    private ReceiverHandler receiverForMsg;
 
     public Handler(Scanner scanner, Logger logger) {
         this.scanner = scanner;
@@ -47,10 +55,7 @@ public class Handler extends Thread {
         input();
     }
 
-    protected static final String commands[] = { "--exit", "--msg", "--createGroup", "--addUser", "--signIn",
-            "--addGroupMember",
-            "--viewGroup",
-            "--help" };
+    protected static final String commands[] = { "--exit", "--msg", "--signIn", "--help" };
 
     private void input() {
         boolean msgTrigger = false;
@@ -65,6 +70,9 @@ public class Handler extends Thread {
                     case "--exit":
                         breakLoop = true;
                         scanner.close();
+                        break;
+                    case "--convo":
+                        displayConvo();
                         break;
                     case "--msg":
                         startMessage();
@@ -95,37 +103,6 @@ public class Handler extends Thread {
                         System.out.println(findUser(user) ? "Added Friend" : "Can't find user");
                         break;
                     case "--signin":
-                        String authorizationUrl = "https://github.com/login/oauth/authorize?client_id=Iv1.e7597fd0dd9b7d63&redirect_uri=http://localhost:8080/";
-                        // String redirectUri = "http://localhost:12345/callback";
-
-                        // // Start a local server to handle the redirect
-                        // Server server = new Server(12345);
-                        // server.start();
-
-                        // // After authentication, GitHub will redirect the user to
-                        // // http://localhost:12345/callback with the authorization code
-
-                        // // Implement the callback handler in your server
-                        // server.addContext("/callback", new HttpHandler() {
-                        // @Override
-                        // public void handle(HttpExchange exchange) throws IOException {
-                        // // Extract the authorization code from the query parameters
-                        // String query = exchange.getRequestURI().getQuery();
-                        // String authorizationCode = query.split("=")[1];
-
-                        // // Exchange the authorization code for an access token
-                        // // Handle the rest of the OAuth flow here
-
-                        // // Send a response back to the client
-                        // String response = "Authentication successful!";
-                        // exchange.sendResponseHeaders(200, response.length());
-                        // try (OutputStream os = exchange.getResponseBody()) {
-                        // os.write(response.getBytes());
-                        // }
-                        // }
-                        // });
-                        System.out.println("Please visit the following URL to authenticate:");
-                        System.out.println(authorizationUrl);
                         System.out.println("Enter Username:");
                         username = scanner.next().trim();
                         System.out.println(username + "+++++++++++++++++++++++++++++");
@@ -140,9 +117,9 @@ public class Handler extends Thread {
                         group = scanner.next().trim();
                         System.out.println(group + ": " + viewMembers(group));
                         break;
-                    case "--test":
-                        HttpRequest request = null;
-                        client.send(null, null);
+                    case "--login":
+                        System.out.println("Duncan begin");
+                        String accessCode = login();
                         break;
                     default:
                         if (command.startsWith("--")) {
@@ -163,8 +140,53 @@ public class Handler extends Thread {
 
     }
 
-    private String processMsg(String command) {
-        return "Me: " + command.trim() + " " + scanner.nextLine().trim();
+    private Optional<String> code = Optional.empty();
+
+    private String login() throws URISyntaxException, IOException, InterruptedException {
+        String stringCode = "";
+        String clientId_secret = "Iv1.e7597fd0dd9b7d63";
+        String redirect_uri = "http://localhost:8080";
+        String clientLoginURL = "https://github.com/login/oauth/authorize?client_id=" + clientId_secret
+                + "&redirect_uri=" + redirect_uri + "/login&scope=read:user";
+        System.out.println(clientLoginURL);
+        String resp = "Close windows";
+        try {
+
+            HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
+            server.createContext("/login", exchange -> {
+                String query = exchange.getRequestURI().getQuery();
+                if (query != null && query.startsWith("code=")) {
+                    code = Optional.of(query.substring(5));
+                    System.out.println("one");
+                    exchange.sendResponseHeaders(200, resp.getBytes().length);
+                    System.out.println("two`");
+                    exchange.getResponseBody().write(resp.getBytes());
+                    System.out.println("three");
+                    System.out.println("DEVBUG : "+query);
+                } else {
+                    exchange.sendResponseHeaders(401, 0);
+                }
+                exchange.close();
+                server.stop(0);
+            });
+            server.start();
+            while (code.isEmpty()) {
+                Thread.sleep(50);
+            }
+            stringCode = code.get();
+            System.out.println("DEBUG: " + stringCode);
+            HttpClient 
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println(stringCode);
+        return stringCode;
+    }
+
+    private String processMsg(String command) throws URISyntaxException, IOException, InterruptedException {
+        String msg = command.trim() + " " + scanner.nextLine().trim();
+        sendMessage(msg);
+        return "Me: " + msg;
     }
 
     private String viewMembers(String group) {
@@ -229,6 +251,7 @@ public class Handler extends Thread {
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI(baseURI + extension))
+                .headers("Content-Type", "text/plain;charset=UTF-8")
                 .POST(publisher)
                 .build();
         return client.send(request, BodyHandlers.ofString());
@@ -245,25 +268,102 @@ public class Handler extends Thread {
         return client.send(request, BodyHandlers.ofString());
     }
 
+    private void displayConvo() throws URISyntaxException, IOException, InterruptedException {
+        System.out.println("DEBUG: Display Convo");
+        String resp = get("/chats", "Get", "value").body();
+        JsonArray convertedObject = new Gson().fromJson(resp, JsonArray.class);
+        convertedObject.asList().stream()
+                .forEach(o -> System.out.println(o.getAsJsonObject().get("chatID").toString()));
+        System.out.println(convertedObject.asList());
+        System.out.println();
+        System.out.println(get("/messages", "get", "value").body());
+    }
+
     private void startMessage() throws URISyntaxException, IOException, InterruptedException {
-        String user = scanner.next().trim();
-        globalUser = user;
+        globalUser = scanner.next().trim();
         String msg = scanner.nextLine().trim();
+        // get all chats for a certain user id and receiver username
         System.out.println("Started coversation with " + globalUser);
-        System.out.println("Sending to " + user + (msg == "" ? ":" : (":\nMe:" + msg)));
-        HttpResponse<String> response = post("/chats",
-                HttpRequest.BodyPublishers.ofString(username + "," + globalUser));
-        System.out.println(response.body());
-        sendMessage();
+        System.out.println("Sending to " + globalUser + (msg == "" ? ":" : (":\nMe:" + msg)));
+        receiverForMsg = new ReceiverHandler(username, globalUser);
+        receiverForMsg.start();
+        sleep(50);
+        Chat c = new Chat(-1, username, globalUser);
+        String json = jsonifyString(c);
+        DEBUG(json);
+        HttpResponse<String> response = get("/chats/userchat/" + c.getSender() + "/" + c.getReceiver(), "get", "value");
+        DEBUG("chats response:" + response.body());
+        JsonArray allChats = new Gson().fromJson(response.body(), JsonArray.class);
+        allChats.asList().stream()
+                .forEach(obj -> printConvo(obj));
+        if (msg != "")
+            sendMessage(msg);
+    }
+
+    private void printConvo(JsonElement json) {
+        // Lambda expression's parameter json cannot redeclare another local variable
+        // defined in an enclosing scope.
+        String content = json.getAsJsonObject().get("content").toString();
+        String name = json.getAsJsonObject().get("senderUserName").toString().replace(username, "me");
+        String tmStamp = json.getAsJsonObject().get("CreatedAt").toString();
+        chatID = json.getAsJsonObject().get("senderUserName").toString().equals("\"" + username + "\"")
+                ? Integer.parseInt(json.getAsJsonObject().get("ChatId").toString())
+                : chatID;
+        System.out.println(tmStamp.substring(1, tmStamp.length() - 1) + " " + name.replace("\"", "") + ": "
+                + content.substring(1, content.length() - 1));
+        DEBUG(chatID + "CHAT ID");
+        DEBUG(json.getAsJsonObject().get("senderUserName").toString());
     }
 
     private void getClientID() throws URISyntaxException, IOException, InterruptedException {
-        clientID = 6;
-        System.out.println(get( "/users", "username", username).body());
-        System.out.println("POST");
+        try {
+            String allChat = get("/users", "get", "value").body();
+            DEBUG(allChat);
+
+            JsonArray convertedObject = new Gson().fromJson(allChat, JsonArray.class);
+            Optional<JsonElement> holdObject = convertedObject.asList().stream()
+                    .filter(chat -> chat.getAsJsonObject().get("UserName").getAsString().equals(username)).findFirst();
+            System.out.println("==================================");
+            String id = holdObject.get().getAsJsonObject().get("UserId").toString();
+            DEBUG(id);
+            clientID = Integer.parseInt(id);
+            System.out.println("DEF ID: " + clientID);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println("New Username: ");
+            username = scanner.next();
+            System.out.println("Enter email: ");
+            String email = scanner.next();
+            System.out.println("Enter Phone number (Integer): ");
+            String number = scanner.next();
+            String contents = username + "," + email + "," + number;
+            post("/users", HttpRequest.BodyPublishers.ofString(contents));
+        }
+        System.out.println(clientID);
+        System.out.println("GET: Client ID");
     }
 
-    private void sendMessage() {
-
+    private void sendMessage(String msg) throws URISyntaxException, IOException, InterruptedException {
+        String json = jsonifyString(new Message(chatID, msg));
+        System.out.println("DEBUG json: " + json);
+        HttpResponse<String> response = post("/messages", HttpRequest.BodyPublishers.ofString(json));
+        System.out.println(response.body());
     }
+
+    private String jsonifyString(Object o) {
+        Gson gson = new Gson();
+        return gson.toJson(o);
+    }
+
+    private boolean DEBUG = true;
+
+    private void DEBUG(String s) {
+        System.out.print(DEBUG ? "DEBUG: " + s + "\n" : "");
+    }
+    /*
+     * Registerd app
+     * gotten secrets
+     * istall libraries (maven dependencies)
+     * 
+     */
 }
