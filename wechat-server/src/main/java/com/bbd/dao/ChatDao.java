@@ -12,7 +12,6 @@ import org.springframework.stereotype.Repository;
 
 import com.bbd.model.Chat;
 
-
 @Repository
 public class ChatDao {
 
@@ -28,8 +27,8 @@ public class ChatDao {
       Chat chat = new Chat();
 
       chat.setChatID(resultSet.getInt("ChatId"));
-      chat.setSenderID(resultSet.getInt("Sender"));
-      chat.setReceiverID(resultSet.getInt("Receiver"));
+      chat.setSender(resultSet.getString("Sender"));
+      chat.setReceiver(resultSet.getString("Receiver"));
 
       return chat;
     }
@@ -50,11 +49,12 @@ public class ChatDao {
   }
 
   public void insertChatToDb(Chat chat) {
-    final String sql = "INSERT INTO Chat (Sender, Receiver) VALUES (?, ?)";
-    final int senderId = chat.getSenderID();
-    final int receiverId = chat.getReceiverID();
+    final String sql = "EXECUTE InsertIntoChat @Sender= ?, @Receiver= ?";
+    final String sender = chat.getSender();
+    final String receiver = chat.getReceiver();
 
-    jdbcTemplate.update(dbQuery + sql, new Object[] {senderId, receiverId});
+    int result = jdbcTemplate.update(dbQuery + sql, new Object[] { sender, receiver });
+
   }
 
   public void deleteChatById(int ChatId) {
@@ -62,6 +62,7 @@ public class ChatDao {
     jdbcTemplate.update(dbQuery + sql, ChatId);
   }
 
-  public void updateChat(Chat Chat) {}
+  public void updateChat(Chat Chat) {
+  }
 
 }
