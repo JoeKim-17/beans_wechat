@@ -3,10 +3,10 @@ package com.bbd.model;
 public class Chat {
 
   private int ChatId;
-  private int Sender;
-  private int Receiver;
+  private String Sender;
+  private String Receiver;
 
-  public Chat(int ChatId, int Sender, int Receiver) {
+  public Chat(int ChatId, String Sender, String Receiver) {
     this.ChatId = ChatId;
     this.Sender = Sender;
     this.Receiver = Receiver;
@@ -22,19 +22,19 @@ public class Chat {
     this.ChatId = ChatId;
   }
 
-  public int getSenderID() {
+  public String getSender() {
     return Sender;
   }
 
-  public void setSenderID(int Sender) {
+  public void setSender(String Sender) {
     this.Sender = Sender;
   }
 
-  public int getReceiverID() {
+  public String getReceiver() {
     return Receiver;
   }
 
-  public void setReceiverID(int Receiver) {
+  public void setReceiver(String Receiver) {
     this.Receiver = Receiver;
   }
 
