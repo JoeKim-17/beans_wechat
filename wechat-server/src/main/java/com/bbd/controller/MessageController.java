@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bbd.dao.MessageDao;
@@ -41,6 +42,7 @@ public class MessageController {
   }
 
   @RequestMapping(method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+  @ResponseBody
   public void insertMessage(@RequestBody String message) {
     String[] messageStrings = message.split(",");
     messageDao.insertMessageToDb(new Message(-1, Integer.parseInt(messageStrings[0].trim()), messageStrings[1].trim()));

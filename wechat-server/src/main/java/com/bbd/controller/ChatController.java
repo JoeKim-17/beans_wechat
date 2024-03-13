@@ -1,5 +1,6 @@
 package com.bbd.controller;
 
+import java.util.Arrays;
 import java.util.Collection;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bbd.dao.ChatDao;
@@ -37,8 +39,10 @@ public class ChatController {
   }
 
   @RequestMapping(method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+  @ResponseBody
   public void insertChat(@Validated @RequestBody String chat) {
     String[] chatter = chat.split(",");
+    System.out.println(Arrays.toString(chatter));
     chatDao.insertChatToDb(new Chat(-1, chatter[0].trim(), chatter[1].trim()));
   }
 
