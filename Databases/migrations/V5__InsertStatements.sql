@@ -11,16 +11,16 @@ VALUES
 (1,2),
 (2,1),
 (3,4),
-(6,7);
+(4,2);
 
 
 INSERT INTO Message(ChatId,Content)
 VALUES 
 (5,'Hi Dude'),
-(6,'Hi Stranger'),
-(7,'Hey please call me'),
-(8,'Its too late');
-
+(4,'Hi Stranger'),
+(7,'Hey please call me')
+--(8,'Its too late')
+;
 --Using the stored procedures
 EXEC InsertUser
     @UserName = 'Duncan984',
