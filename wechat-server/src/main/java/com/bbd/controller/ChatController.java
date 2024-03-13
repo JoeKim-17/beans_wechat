@@ -37,8 +37,8 @@ public class ChatController {
   }
 
   @RequestMapping(method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-  public void insertChat(@Validated @RequestBody Chat chat) {
-    chatDao.insertChatToDb(chat);
+  public void insertChat(@Validated @RequestBody String chat) {
+    chatDao.insertChatToDb(chat.split(","));
   }
 
 }

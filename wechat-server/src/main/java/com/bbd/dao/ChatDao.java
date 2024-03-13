@@ -49,10 +49,10 @@ public class ChatDao {
     return chat;
   }
 
-  public void insertChatToDb(Chat chat) {
-    final String sql = "INSERT INTO Chat (Sender, Receiver) VALUES (?, ?)";
-    final int senderId = chat.getSenderID();
-    final int receiverId = chat.getReceiverID();
+  public void insertChatToDb(String[] chatters) {
+    final String sql = "execute InsertIntoChat @Sender='?', @Receiver='?";
+    final String senderId = chatters[0].trim();
+    final String receiverId = chatters[1].trim();
 
     jdbcTemplate.update(dbQuery + sql, new Object[] {senderId, receiverId});
   }
