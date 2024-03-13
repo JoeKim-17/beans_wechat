@@ -1,4 +1,4 @@
-DROP PROCEDURE InsertUser;\
+DROP PROCEDURE InsertUser;
 GO
 
 DROP PROCEDURE InsertIntoChat;
