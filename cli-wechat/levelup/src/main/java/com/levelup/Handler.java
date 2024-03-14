@@ -15,8 +15,9 @@ import java.util.logging.Logger;
 public class Handler extends Thread {
     private Scanner scanner;
     private Logger logger;
-    private final String baseURI = "http://wechat-beans-app.eu-west-1.elasticbeanstalk.com";
-    // private final String baseURI = "http://localhost:8080";
+    // private final String baseURI =
+    // "http://wechat-beans-app.eu-west-1.elasticbeanstalk.com";
+    private final String baseURI = "http://localhost:8080";
     private String globalUser = "";
     private String username = "";
     private HttpClient client;
@@ -94,34 +95,6 @@ public class Handler extends Thread {
                         break;
                     case "--signin":
                         String authorizationUrl = "https://github.com/login/oauth/authorize?client_id=Iv1.e7597fd0dd9b7d63&redirect_uri=http://localhost:8080/";
-                        // String redirectUri = "http://localhost:12345/callback";
-
-                        // // Start a local server to handle the redirect
-                        // Server server = new Server(12345);
-                        // server.start();
-
-                        // // After authentication, GitHub will redirect the user to
-                        // // http://localhost:12345/callback with the authorization code
-
-                        // // Implement the callback handler in your server
-                        // server.addContext("/callback", new HttpHandler() {
-                        // @Override
-                        // public void handle(HttpExchange exchange) throws IOException {
-                        // // Extract the authorization code from the query parameters
-                        // String query = exchange.getRequestURI().getQuery();
-                        // String authorizationCode = query.split("=")[1];
-
-                        // // Exchange the authorization code for an access token
-                        // // Handle the rest of the OAuth flow here
-
-                        // // Send a response back to the client
-                        // String response = "Authentication successful!";
-                        // exchange.sendResponseHeaders(200, response.length());
-                        // try (OutputStream os = exchange.getResponseBody()) {
-                        // os.write(response.getBytes());
-                        // }
-                        // }
-                        // });
                         System.out.println("Please visit the following URL to authenticate:");
                         System.out.println(authorizationUrl);
                         System.out.println("Enter Username:");
@@ -259,20 +232,36 @@ public class Handler extends Thread {
     }
 
     private void getClientID() throws URISyntaxException, IOException, InterruptedException {
-        clientID = Integer.parseInt(get("/users", "username", username).body());
+        try {
+            clientID = Integer.parseInt(get("/users", "username", username).body());
+        } catch (Exception e) {
+            String contents = "Joe,joe@joe.com,0123123123";
+            System.out.println("New Username: ");
+            username = scanner.next();
+            System.out.println("Enter email: ");
+            String email = scanner.next();
+            System.out.println("Enter Phone number (Integer): ");
+            String number = scanner.next();
+            contents = username+","+email+","+number;
+            post("/users", HttpRequest.BodyPublishers.ofString(contents));
+        }
         System.out.println(clientID);
         System.out.println("GET: Client ID");
     }
 
     private void sendMessage(String msg) throws URISyntaxException, IOException, InterruptedException {
         int chatID = Integer.parseInt(get("/users", "username", globalUser).body());
-        String contents = jsonify(chatID + "," + msg);
+        String contents = chatID+","+msg;
         System.out.println(chatID + " fetch sendmessage");
         HttpResponse<String> response = post("/messages", HttpRequest.BodyPublishers.ofString(contents));
         System.out.println(response.body());
     }
-
-    private String jsonify(String s) {
-        return "[{" + s + "}]";
-    }
+    /*
+     * Registerd app
+     * gotten secrets
+     * istall libraries (maven dependencies)
+     * 
+     */
 }
+
+
