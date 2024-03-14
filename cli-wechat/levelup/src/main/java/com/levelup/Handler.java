@@ -13,18 +13,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.levelup.model.*;
 
 public class Handler extends Thread {
     private Scanner scanner;
     private Logger logger;
-    // private final String baseURI =
-    // "http://wechat-beans-app.eu-west-1.elasticbeanstalk.com";
+    // private final String baseURI = "http://wechat-beans-app.eu-west-1.elasticbeanstalk.com";
     private final String baseURI = "http://localhost:8080";
     private String globalUser = "";
     private String username = "";
@@ -54,10 +49,7 @@ public class Handler extends Thread {
         input();
     }
 
-    protected static final String commands[] = { "--exit", "--msg", "--createGroup", "--addUser", "--signIn",
-            "--addGroupMember",
-            "--viewGroup",
-            "--help" };
+    protected static final String commands[] = { "--exit", "--msg", "--signIn", "--help" };
 
     private void input() {
         boolean msgTrigger = false;
@@ -122,9 +114,9 @@ public class Handler extends Thread {
                         group = scanner.next().trim();
                         System.out.println(group + ": " + viewMembers(group));
                         break;
-                    case "--test":
-                        HttpRequest request = null;
-                        client.send(null, null);
+                    case "--login":
+                        System.out.println("Duncan begin");
+                        login();
                         break;
                     default:
                         if (command.startsWith("--")) {
@@ -143,6 +135,12 @@ public class Handler extends Thread {
             }
         }
 
+    }
+
+    private void login() {
+      String clientId = "Iv1.e7597fd0dd9b7d63", redirect_uri = "http://localhost:8080/";  
+      String clientLoginURL = "https://github.com/login/oauth/authorize?client_id="+clientId+"&redirect_uri="+redirect_uri+"&scope=SCOPE1"; 
+      System.out.println(clientLoginURL); 
     }
 
     private String processMsg(String command) throws URISyntaxException, IOException, InterruptedException {
@@ -232,10 +230,10 @@ public class Handler extends Thread {
 
     private void displayConvo() throws URISyntaxException, IOException, InterruptedException {
         System.out.println("DEBUG: Display Convo");
-        JsonArray obj = new JsonArray(); 
         String resp = get("/chats", "Get", "value").body();
         JsonArray convertedObject = new Gson().fromJson(resp, JsonArray.class);
-        convertedObject.asList().stream().forEach(o -> System.out.println(o.getAsJsonObject().get("chatID").toString()));
+        convertedObject.asList().stream()
+                .forEach(o -> System.out.println(o.getAsJsonObject().get("chatID").toString()));
         System.out.println(convertedObject.asList());
         System.out.println();
         System.out.println(get("/messages", "get", "value").body());
@@ -249,22 +247,23 @@ public class Handler extends Thread {
         String json = jsonifyString(new Chat(-1, username, globalUser));
         HttpResponse<String> response = post("/chats",
                 HttpRequest.BodyPublishers.ofString(json));
-        System.out.println(response.body());
-        sendMessage(msg);
+        if (msg != "")
+            sendMessage(msg);
+
     }
 
     private void getClientID() throws URISyntaxException, IOException, InterruptedException {
         try {
-            clientID = Integer.parseInt(get("/users", "username", username).body());
+            String ans = get("/users", "username", username).body();
+            clientID = Integer.parseInt("POG DEFF"+ans);
         } catch (Exception e) {
-            String contents = "Joe,joe@joe.com,0123123123";
             System.out.println("New Username: ");
             username = scanner.next();
             System.out.println("Enter email: ");
             String email = scanner.next();
             System.out.println("Enter Phone number (Integer): ");
             String number = scanner.next();
-            contents = username + "," + email + "," + number;
+            String contents = username + "," + email + "," + number;
             post("/users", HttpRequest.BodyPublishers.ofString(contents));
         }
         System.out.println(clientID);
@@ -272,10 +271,8 @@ public class Handler extends Thread {
     }
 
     private void sendMessage(String msg) throws URISyntaxException, IOException, InterruptedException {
-        int chatID = Integer.parseInt(get("/users", "username", globalUser).body());
-        String contents = username + "," + "," + msg;
-        System.out.println(chatID + " fetch sendmessage");
         String json = jsonifyString(new Message(username, globalUser, msg));
+        System.out.println("DEBUG json: "+json);
         HttpResponse<String> response = post("/messages", HttpRequest.BodyPublishers.ofString(json));
         System.out.println(response.body());
     }
