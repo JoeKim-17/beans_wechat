@@ -18,23 +18,24 @@ public class Message {
 
   public Message() {}
 
+  public int getMessageID() {
+    return messageID;
+  }
+
+  public void setMessageID(int messageID) {
+    this.messageID = messageID;
+  }
+
   public int getChatID() {
-    return this.chatID;
+    return chatID;
   }
 
   public void setChatID(int chatID) {
     this.chatID = chatID;
   }
 
-  public int getMessageID(){
-    return this.messageID;
-  }
-
-  public void setMessageID(int messageID) {
-    this.messageID = messageID;
-  }
   public String getContent() {
-    return this.content;
+    return content;
   }
 
   public void setContent(String content) {
