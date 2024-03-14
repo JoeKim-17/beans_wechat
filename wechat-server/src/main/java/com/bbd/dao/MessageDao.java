@@ -29,6 +29,7 @@ public class MessageDao {
     public Message mapRow(ResultSet resultSet, int i) throws SQLException {
       Message message = new Message();
 
+      message.setMessageID(resultSet.getInt("MessageID"));
       message.setChatID(resultSet.getInt("ChatId"));
       message.setContent(resultSet.getString("Content"));
       message.setCreatedAt(resultSet.getTimestamp("CreatedAt"));
@@ -56,7 +57,7 @@ public class MessageDao {
   public String getMessageById(int MessageId) {
     Message message;
     try {
-      final String sql = "SELECT MessageId, ChatId, Content FROM Message WHERE MessageId = ?";
+      final String sql = "SELECT * FROM Message WHERE MessageId = ?";
       message = jdbcTemplate.queryForObject(dbQuery + sql, new MessageRowMapper(), MessageId);
     } catch (EmptyResultDataAccessException e) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage()).toString();
