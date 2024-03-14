@@ -6,6 +6,7 @@
 - run `$ mvn install` to install packages specified in _pom.xml_
 - run `$ mvn spring-boot:run` or click `Run` on your IDE to start the server
 - go to `http://localhost:8080` to check if server is running
+- [Available API endpoints](http://wechat-beans-app.eu-west-1.elasticbeanstalk.com/swagger-ui/index.html#/)
 
 ## Running the CLI
 
