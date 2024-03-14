@@ -2,7 +2,6 @@ package com.bbd.dao;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +13,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import com.bbd.model.Message;
+import com.google.gson.Gson;
 
 @Repository
 public class MessageDao {
@@ -49,7 +49,9 @@ public class MessageDao {
       return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(e.getMessage()).toString();
     }
 
-    return messages.toString();
+    String json = new Gson().toJson(messages);
+
+    return json;
   }
 
   public String getMessageById(int MessageId) {
@@ -63,32 +65,72 @@ public class MessageDao {
       return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(e.getMessage()).toString();
     }
 
-    return message.toString();
+    String json = new Gson().toJson(message);
+
+    return json;
   }
 
-  public void insertMessageToDb(Message message) {
-    final String sql = "EXECUTE InsertMessage @Sender = ?, @Receiver= ?, @Content= ?";
-    final String sender = message.getSender();
-    final String receiver = message.getReceiver();
+  public String insertMessageToDb(Message message) {
+
+    final String sql = "INSERT INTO Message (ChatId, Content) VALUES (?, ?)";
+    final int ChatId = message.getChatID();
     final String Content = message.getContent();
+
     try {
-      jdbcTemplate.update(dbQuery + sql, new Object[] { sender, receiver, Content });
+      jdbcTemplate.update(dbQuery + sql, new Object[] { ChatId, Content });
+    } catch (EmptyResultDataAccessException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body("data not found").toString();
     } catch (Exception e) {
-      System.err.println("DEBUG: failed to insert message to db " + e.toString());
+      boolean isFkConstraintError = e.getMessage()
+          .contains("The INSERT statement conflicted with the FOREIGN KEY constraint");
+
+      if (isFkConstraintError) {
+        return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body("Failed to INSERT: ChatId not found")
+            .toString();
+      }
+
+      return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(e.getMessage()).toString();
     }
+
+    return ResponseEntity.status(HttpStatus.CREATED).body("Record Inserted successfully").toString();
   }
 
-  public void updateMessage(Message message) {
+  public String updateMessage(Message message) {
     final String sql = "UPDATE Message SET Content = ? WHERE MessageId = ?";
     final int MessageId = message.getMessageID();
     final String Content = message.getContent();
 
-    jdbcTemplate.update(dbQuery + sql, new Object[] { Content, MessageId });
+    int res;
+    try {
+      res = jdbcTemplate.update(dbQuery + sql, new Object[] { Content, MessageId });
+    } catch (EmptyResultDataAccessException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body("data not found").toString();
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(e.getMessage()).toString();
+    }
+
+    if (res == 0) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body("failed update record").toString();
+    }
+
+    return ResponseEntity.status(HttpStatus.OK).body("Record updated successfully").toString();
   }
 
-  public void deleteMessageById(int MessageId) {
+  public String deleteMessageById(int MessageId) {
     final String sql = "DELETE FROM Message WHERE MessageId = ?";
-    jdbcTemplate.update(dbQuery + sql, MessageId);
+
+    int res;
+    try {
+      res = jdbcTemplate.update(dbQuery + sql, MessageId);
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(e.getMessage()).toString();
+    }
+
+    if (res == 0) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body("failed to delete record").toString();
+    }
+
+    return ResponseEntity.status(HttpStatus.OK).body("Record deleted successfully").toString();
   }
 
 }
