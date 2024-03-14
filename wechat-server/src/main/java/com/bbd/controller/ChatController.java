@@ -22,25 +22,32 @@ public class ChatController {
   private ChatDao chatDao;
 
   @RequestMapping(method = RequestMethod.GET)
-  public Collection<Chat> getAllChats() {
-    return chatDao.getAllChats();
+  public String getAllChats() {
+    return chatDao.getAllChats().toString();
+  }
+
+  @RequestMapping(value = "/userchat/{sender}/{receiver}", method = RequestMethod.GET)
+  public String getUserChat(@PathVariable String sender, @PathVariable String receiver) {
+    // chatDao.get
+    return chatDao.getUserChat(sender, receiver).toString();
   }
 
   @RequestMapping(value = "/{id}", method = RequestMethod.GET)
-  public Chat getChatById(@PathVariable("id") int ChatId) {
-    return chatDao.getChatById(ChatId);
+  public String getChatById(@PathVariable("id") int ChatId) {
+    return chatDao.getChatById(ChatId).toString();
   }
 
   @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-  public void deleteChatById(@PathVariable("id") int ChatId) {
+  public String deleteChatById(@PathVariable("id") int ChatId) {
     chatDao.deleteChatById(ChatId);
+    return "";
   }
 
-  @RequestMapping(method = RequestMethod.POST, consumes = MediaType.ALL_VALUE)
-  public void insertChat(@RequestBody String chat) {
+  @RequestMapping(method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+  public String insertChat(@RequestBody String chat) {
     System.err.println("DEBUG: "+chat); 
     Chat c = new Gson().fromJson(chat,Chat.class);
     chatDao.insertChatToDb(c);
+    return "";
   }
-
 }

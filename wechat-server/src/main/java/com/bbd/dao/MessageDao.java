@@ -6,6 +6,9 @@ import java.util.Collection;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -26,25 +29,41 @@ public class MessageDao {
     public Message mapRow(ResultSet resultSet, int i) throws SQLException {
       Message message = new Message();
 
+      message.setMessageID(resultSet.getInt("MessageID"));
       message.setChatID(resultSet.getInt("ChatId"));
       message.setContent(resultSet.getString("Content"));
+      message.setCreatedAt(resultSet.getTimestamp("CreatedAt"));
 
       return message;
     }
   }
 
-  public Collection<Message> getAllMessages() {
-    final String sql = "SELECT * FROM Message";
-    List<Message> messages = jdbcTemplate.query(dbQuery + sql, new MessageRowMapper());
+  public String getAllMessages() {
+    List<Message> messages = null;
+    try {
+      final String sql = "SELECT MessageId, ChatId, Content, CreatedAt FROM Message";
+      messages = jdbcTemplate.query(dbQuery + sql, new MessageRowMapper());
+    } catch (EmptyResultDataAccessException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage()).toString();
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(e.getMessage()).toString();
+    }
 
-    return messages;
+    return messages.toString();
   }
 
-  public Message getMessageById(int MessageId) {
-    final String sql = "SELECT MessageId, ChatId, Content FROM Message WHERE MessageId = ?";
-    Message message = jdbcTemplate.queryForObject(dbQuery + sql, new MessageRowMapper(), MessageId);
+  public String getMessageById(int MessageId) {
+    Message message;
+    try {
+      final String sql = "SELECT MessageId, ChatId, Content, CreatedAt FROM Message WHERE MessageId = ?";
+      message = jdbcTemplate.queryForObject(dbQuery + sql, new MessageRowMapper(), MessageId);
+    } catch (EmptyResultDataAccessException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage()).toString();
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(e.getMessage()).toString();
+    }
 
-    return message;
+    return message.toString();
   }
 
   public void insertMessageToDb(Message message) {

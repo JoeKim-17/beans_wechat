@@ -1,17 +1,19 @@
 package com.bbd.model;
 
+import java.sql.Timestamp;
+
 public class Message {
 
-  private String sender;
-  private String receiver;
-  private String content;
-  private int messageID;
+  private int messageID; 
   private int chatID;
+  private String content;
+  private Timestamp CreatedAt;
 
-  public Message(String sender, String receiver, String content) {
-    this.sender = sender;
-    this.receiver = receiver;
+  public Message(int messageID, int chatID, String content, Timestamp CreatedAt) {
+    this.messageID = messageID;
+    this.chatID = chatID;
     this.content = content;
+    this.CreatedAt = CreatedAt;
   }
 
   public Message() {}
@@ -31,23 +33,6 @@ public class Message {
   public void setMessageID(int messageID) {
     this.messageID = messageID;
   }
-
-  public String getSender() {
-    return this.sender;
-  }
-
-  public void setSender(String sender) {
-    this.sender = sender;
-  }
-
-  public String getReceiver() {
-    return this.receiver;
-  }
-
-  public void setReceiver(String receiver) {
-    this.receiver = receiver;
-  }
-
   public String getContent() {
     return this.content;
   }
@@ -56,4 +41,11 @@ public class Message {
     this.content = content;
   }
 
+  public Timestamp getCreatedAt() {
+    return CreatedAt;
+  }
+
+  public void setCreatedAt(Timestamp createdAt) {
+    CreatedAt = createdAt;
+  }
 }

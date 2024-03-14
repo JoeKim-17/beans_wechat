@@ -24,12 +24,12 @@ public class MessageController {
   private MessageDao messageDao;
 
   @RequestMapping(method = RequestMethod.GET)
-  public Collection<Message> getAllMessages() {
+  public String getAllMessages() {
     return messageDao.getAllMessages();
   }
 
   @RequestMapping(value = "/{id}", method = RequestMethod.GET)
-  public Message getMessageById(@PathVariable("id") int MessageId) {
+  public String getMessageById(@PathVariable("id") int MessageId) {
     return messageDao.getMessageById(MessageId);
   }
 
