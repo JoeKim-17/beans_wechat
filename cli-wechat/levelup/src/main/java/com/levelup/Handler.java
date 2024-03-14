@@ -19,7 +19,8 @@ import com.levelup.model.*;
 public class Handler extends Thread {
     private Scanner scanner;
     private Logger logger;
-    // private final String baseURI = "http://wechat-beans-app.eu-west-1.elasticbeanstalk.com";
+    // private final String baseURI =
+    // "http://wechat-beans-app.eu-west-1.elasticbeanstalk.com";
     private final String baseURI = "http://localhost:8080";
     private String globalUser = "";
     private String username = "";
@@ -138,9 +139,11 @@ public class Handler extends Thread {
     }
 
     private void login() {
-      String clientId = "Iv1.e7597fd0dd9b7d63", redirect_uri = "http://localhost:8080/";  
-      String clientLoginURL = "https://github.com/login/oauth/authorize?client_id="+clientId+"&redirect_uri="+redirect_uri+"&scope=SCOPE1"; 
-      System.out.println(clientLoginURL); 
+        String clientId_secret = "Iv1.e7597fd0dd9b7d63";
+        String redirect_uri = "http://localhost:8080/";
+        String clientLoginURL = "https://github.com/login/oauth/authorize?client_id=" + clientId_secret
+                + "&redirect_uri=" + redirect_uri + "&scope=SCOPE1";
+        System.out.println(clientLoginURL);
     }
 
     private String processMsg(String command) throws URISyntaxException, IOException, InterruptedException {
@@ -255,7 +258,8 @@ public class Handler extends Thread {
     private void getClientID() throws URISyntaxException, IOException, InterruptedException {
         try {
             String ans = get("/users", "username", username).body();
-            clientID = Integer.parseInt("POG DEFF"+ans);
+            clientID = Integer.parseInt(ans);
+            System.out.println("DEF ANS");
         } catch (Exception e) {
             System.out.println("New Username: ");
             username = scanner.next();
@@ -272,7 +276,7 @@ public class Handler extends Thread {
 
     private void sendMessage(String msg) throws URISyntaxException, IOException, InterruptedException {
         String json = jsonifyString(new Message(username, globalUser, msg));
-        System.out.println("DEBUG json: "+json);
+        System.out.println("DEBUG json: " + json);
         HttpResponse<String> response = post("/messages", HttpRequest.BodyPublishers.ofString(json));
         System.out.println(response.body());
     }

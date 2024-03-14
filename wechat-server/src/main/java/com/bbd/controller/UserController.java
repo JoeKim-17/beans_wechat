@@ -25,7 +25,9 @@ public class UserController {
 
   @RequestMapping(method = RequestMethod.GET)
   public int getUserID(@RequestHeader("username") String name) {
+    System.out.println("DEBUG " + name);
     Optional<User> user = getAllUsers().stream().filter(s -> s.getUserName().equals(name)).findFirst();
+    System.out.println(user);
     return user.get().getUserId();
   }
 
@@ -51,7 +53,7 @@ public class UserController {
   @RequestMapping(method = RequestMethod.POST, consumes = MediaType.ALL_VALUE)
   public void insertUser(@RequestBody String user) {
     System.out.println("======================== TYING =========================");
-    String [] details = (user.toString()).split(",");
+    String[] details = (user.toString()).split(",");
     userDao.insertUserToDb(new User(0, details[0].trim(), details[1].trim(), details[2].trim()));
     System.out.println("SUCESS");
   }
