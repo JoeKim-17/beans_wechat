@@ -22,6 +22,12 @@ public class UserController {
   @Autowired
   private UserDao userDao;
 
+  @RequestMapping(value = "/login", method = RequestMethod.POST)
+  public String login(String username) {
+    
+    return "";
+  }
+
   @RequestMapping(method = RequestMethod.GET)
   public int getUserID(@RequestHeader("username") String name) {
     System.out.println("DEBUG " + name);
