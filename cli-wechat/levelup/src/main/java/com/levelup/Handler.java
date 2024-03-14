@@ -19,9 +19,8 @@ import com.levelup.model.*;
 public class Handler extends Thread {
     private Scanner scanner;
     private Logger logger;
-    // private final String baseURI =
-    // "http://wechat-beans-app.eu-west-1.elasticbeanstalk.com";
-    private final String baseURI = "http://localhost:8080";
+    private final String baseURI = "http://wechat-beans-app.eu-west-1.elasticbeanstalk.com";
+    // private final String baseURI = "http://localhost:8080";
     private String globalUser = "";
     private String username = "";
     private HttpClient client;
@@ -138,12 +137,20 @@ public class Handler extends Thread {
 
     }
 
-    private void login() {
+    private void login() throws URISyntaxException, IOException, InterruptedException {
         String clientId_secret = "Iv1.e7597fd0dd9b7d63";
         String redirect_uri = "http://localhost:8080/";
         String clientLoginURL = "https://github.com/login/oauth/authorize?client_id=" + clientId_secret
-                + "&redirect_uri=" + redirect_uri + "&scope=SCOPE1";
+                + "&redirect_uri=" + redirect_uri;
         System.out.println(clientLoginURL);
+
+        // HttpRequest request = HttpRequest.newBuilder()
+        // .uri(new URI(clientLoginURL))
+        // .headers("Content-Type", "text/plain;charset=UTF-8")
+        // .POST(HttpRequest.BodyPublishers.noBody())
+        // .build();
+        // HttpResponse resp = client.send(request, BodyHandlers.ofString());
+        // System.err.println(resp.body());
     }
 
     private String processMsg(String command) throws URISyntaxException, IOException, InterruptedException {
@@ -259,7 +266,7 @@ public class Handler extends Thread {
         try {
             String ans = get("/users", "username", username).body();
             clientID = Integer.parseInt(ans);
-            System.out.println("DEF ANS: "+ans);
+            System.out.println("DEF ANS: " + ans);
         } catch (Exception e) {
             System.out.println("New Username: ");
             username = scanner.next();
