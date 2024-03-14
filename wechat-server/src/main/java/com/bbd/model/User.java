@@ -10,6 +10,16 @@ public class User {
 	private String MobileNo;
 	private Timestamp CreatedAt;
 
+	public User() {
+	}
+
+	public User(int UserId, String UserName, String EmailAddress, String MobileNo) {
+		this.UserId = UserId;
+		this.UserName = UserName;
+		this.EmailAddress = EmailAddress;
+		this.MobileNo = MobileNo;
+	}
+
 	public User(int UserId, String UserName, String EmailAddress, String MobileNo, Timestamp CreatedAt) {
 		this.UserId = UserId;
 		this.UserName = UserName;
@@ -17,8 +27,6 @@ public class User {
 		this.MobileNo = MobileNo;
 		this.CreatedAt = CreatedAt;
 	}
-
-	public User() {}
 
 	public int getUserId() {
 		return UserId;

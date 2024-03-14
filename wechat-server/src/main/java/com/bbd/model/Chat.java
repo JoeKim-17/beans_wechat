@@ -9,6 +9,15 @@ public class Chat {
   private String Receiver;
   private Timestamp CreatedAt;
 
+  public Chat() {
+  }
+
+  public Chat(int ChatId, String Sender, String Receiver) {
+    this.ChatId = ChatId;
+    this.Sender = Sender;
+    this.Receiver = Receiver;
+  }
+
   public Chat(int ChatId, String Sender, String Receiver, Timestamp CreatedAt) {
     this.ChatId = ChatId;
     this.Sender = Sender;
@@ -16,8 +25,6 @@ public class Chat {
     this.CreatedAt = CreatedAt;
 
   }
-
-  public Chat() {}
 
   public int getChatID() {
     return ChatId;
