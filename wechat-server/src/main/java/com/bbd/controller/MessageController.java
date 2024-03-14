@@ -1,5 +1,6 @@
 package com.bbd.controller;
 
+import java.util.Arrays;
 import java.util.Collection;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bbd.dao.MessageDao;
+import com.google.gson.Gson;
 import com.bbd.model.Message;
 
 @RestController
@@ -41,11 +43,11 @@ public class MessageController {
     messageDao.updateMessage(message);
   }
 
-  @RequestMapping(method = RequestMethod.POST, consumes = MediaType.ALL_VALUE)
+  @RequestMapping(method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
   public void insertMessage(@RequestBody String message) {
-    System.err.println("DEBUG: "+message);
-    String[] messageStrings = message.split(",");
-    messageDao.insertMessageToDb(new Message(-1, Integer.parseInt(messageStrings[0].trim()), messageStrings[1].trim()));
+    System.err.println("DEBUG MSG: " + message);
+    Message msg = new Gson().fromJson(message, Message.class);
+    messageDao.insertMessageToDb(new Message(msg.getSender(),msg.getReceiver(),msg.getContent()));
   }
 
 }

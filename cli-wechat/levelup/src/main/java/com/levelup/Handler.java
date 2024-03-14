@@ -12,6 +12,14 @@ import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.levelup.model.*;
+
 public class Handler extends Thread {
     private Scanner scanner;
     private Logger logger;
@@ -64,6 +72,9 @@ public class Handler extends Thread {
                     case "--exit":
                         breakLoop = true;
                         scanner.close();
+                        break;
+                    case "--convo":
+                        displayConvo();
                         break;
                     case "--msg":
                         startMessage();
@@ -134,8 +145,10 @@ public class Handler extends Thread {
 
     }
 
-    private String processMsg(String command) {
-        return "Me: " + command.trim() + " " + scanner.nextLine().trim();
+    private String processMsg(String command) throws URISyntaxException, IOException, InterruptedException {
+        String msg = command.trim() + " " + scanner.nextLine().trim();
+        sendMessage(msg);
+        return "Me: " + msg;
     }
 
     private String viewMembers(String group) {
@@ -217,16 +230,25 @@ public class Handler extends Thread {
         return client.send(request, BodyHandlers.ofString());
     }
 
-    private void startMessage() throws URISyntaxException, IOException, InterruptedException {
+    private void displayConvo() throws URISyntaxException, IOException, InterruptedException {
+        System.out.println("DEBUG: Display Convo");
+        JsonArray obj = new JsonArray(); 
+        String resp = get("/chats", "Get", "value").body();
+        JsonArray convertedObject = new Gson().fromJson(resp, JsonArray.class);
+        convertedObject.asList().stream().forEach(o -> System.out.println(o.getAsJsonObject().get("chatID").toString()));
+        System.out.println(convertedObject.asList());
+        System.out.println();
         System.out.println(get("/messages", "get", "value").body());
+    }
+
+    private void startMessage() throws URISyntaxException, IOException, InterruptedException {
         globalUser = scanner.next().trim();
         String msg = scanner.nextLine().trim();
         System.out.println("Started coversation with " + globalUser);
         System.out.println("Sending to " + globalUser + (msg == "" ? ":" : (":\nMe:" + msg)));
-        String contents = username + "," + globalUser;
-        System.out.println(contents);
+        String json = jsonifyString(new Chat(-1, username, globalUser));
         HttpResponse<String> response = post("/chats",
-                HttpRequest.BodyPublishers.ofString(contents));
+                HttpRequest.BodyPublishers.ofString(json));
         System.out.println(response.body());
         sendMessage(msg);
     }
@@ -242,7 +264,7 @@ public class Handler extends Thread {
             String email = scanner.next();
             System.out.println("Enter Phone number (Integer): ");
             String number = scanner.next();
-            contents = username+","+email+","+number;
+            contents = username + "," + email + "," + number;
             post("/users", HttpRequest.BodyPublishers.ofString(contents));
         }
         System.out.println(clientID);
@@ -251,10 +273,16 @@ public class Handler extends Thread {
 
     private void sendMessage(String msg) throws URISyntaxException, IOException, InterruptedException {
         int chatID = Integer.parseInt(get("/users", "username", globalUser).body());
-        String contents = chatID+","+msg;
+        String contents = username + "," + "," + msg;
         System.out.println(chatID + " fetch sendmessage");
-        HttpResponse<String> response = post("/messages", HttpRequest.BodyPublishers.ofString(contents));
+        String json = jsonifyString(new Message(username, globalUser, msg));
+        HttpResponse<String> response = post("/messages", HttpRequest.BodyPublishers.ofString(json));
         System.out.println(response.body());
+    }
+
+    private String jsonifyString(Object o) {
+        Gson gson = new Gson();
+        return gson.toJson(o);
     }
     /*
      * Registerd app
@@ -263,5 +291,3 @@ public class Handler extends Thread {
      * 
      */
 }
-
-
