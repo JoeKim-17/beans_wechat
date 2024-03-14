@@ -48,11 +48,12 @@ public class MessageDao {
   }
 
   public void insertMessageToDb(Message message) {
-    final String sql = "INSERT INTO Message (ChatId, Content) VALUES (?, ?)";
-    final int ChatId = message.getChatID();
+    final String sql = "EXECUTE InsertMessage @Sender = ?, @Receiver= ?, @Content= ?";
+    final String sender = message.getSender();
+    final String receiver = message.getReceiver();
     final String Content = message.getContent();
 
-    jdbcTemplate.update(dbQuery + sql, new Object[] { ChatId, Content });
+    jdbcTemplate.update(dbQuery + sql, new Object[] { sender, receiver, Content });
   }
 
   public void updateMessage(Message message) {
