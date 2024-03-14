@@ -43,15 +43,17 @@ public class UserController {
     userDao.deleteUserById(UserId);
   }
 
-  @RequestMapping(method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
+  @RequestMapping(method = RequestMethod.PUT, consumes = MediaType.ALL_VALUE)
   public void updateUser(@RequestBody User user) {
     userDao.updateUser(user);
   }
 
-  @RequestMapping(method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-  @ResponseBody
-  public void insertUser(@RequestBody User user) {
-    userDao.insertUserToDb(user);
+  @RequestMapping(method = RequestMethod.POST, consumes = MediaType.ALL_VALUE)
+  public void insertUser(@RequestBody String user) {
+    System.out.println("======================== TYING =========================");
+    String [] details = (user.toString()).split(",");
+    userDao.insertUserToDb(new User(0, details[0].trim(), details[1].trim(), details[2].trim()));
+    System.out.println("SUCESS");
   }
 
 }

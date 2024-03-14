@@ -38,9 +38,9 @@ public class ChatController {
     chatDao.deleteChatById(ChatId);
   }
 
-  @RequestMapping(method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-  @ResponseBody
-  public void insertChat(@Validated @RequestBody String chat) {
+  @RequestMapping(method = RequestMethod.POST, consumes = MediaType.ALL_VALUE)
+  public void insertChat(@RequestBody String chat) {
+    System.err.println("DEBUG: "+chat);
     String[] chatter = chat.split(",");
     System.out.println(Arrays.toString(chatter));
     chatDao.insertChatToDb(new Chat(-1, chatter[0].trim(), chatter[1].trim()));

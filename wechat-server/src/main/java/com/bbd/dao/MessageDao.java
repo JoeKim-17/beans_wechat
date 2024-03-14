@@ -51,8 +51,11 @@ public class MessageDao {
     final String sql = "INSERT INTO Message (ChatId, Content) VALUES (?, ?)";
     final int ChatId = message.getChatID();
     final String Content = message.getContent();
-
-    jdbcTemplate.update(dbQuery + sql, new Object[] { ChatId, Content });
+    try {
+      jdbcTemplate.update(dbQuery + sql, new Object[] { ChatId, Content });      
+    } catch (Exception e) {
+      System.err.println("DEBUG: failed to insert message to db "+e.toString());
+    }
   }
 
   public void updateMessage(Message message) {
