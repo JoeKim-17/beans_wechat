@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bbd.dao.UserDao;
@@ -26,6 +25,7 @@ public class UserController {
   @RequestMapping(method = RequestMethod.GET)
   public int getUserID(@RequestHeader("username") String name) {
     System.out.println("DEBUG " + name);
+    System.err.println(getAllUsers());
     Optional<User> user = getAllUsers().stream().filter(s -> s.getUserName().equals(name)).findFirst();
     System.out.println(user);
     return user.get().getUserId();

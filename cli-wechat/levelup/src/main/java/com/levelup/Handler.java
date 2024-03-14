@@ -259,7 +259,7 @@ public class Handler extends Thread {
         try {
             String ans = get("/users", "username", username).body();
             clientID = Integer.parseInt(ans);
-            System.out.println("DEF ANS");
+            System.out.println("DEF ANS: "+ans);
         } catch (Exception e) {
             System.out.println("New Username: ");
             username = scanner.next();
