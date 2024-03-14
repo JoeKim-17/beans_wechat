@@ -1,7 +1,6 @@
 package com.levelup;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
@@ -12,13 +11,12 @@ import java.util.Arrays;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.io.IOException;
 
 public class Handler extends Thread {
     private Scanner scanner;
     private Logger logger;
-    // private final String baseURI = "http://wechat-beans-app.eu-west-1.elasticbeanstalk.com";
-    private final String baseURI = "http://localhost:8080";
+    private final String baseURI = "http://wechat-beans-app.eu-west-1.elasticbeanstalk.com";
+    // private final String baseURI = "http://localhost:8080";
     private String globalUser = "";
     private String username = "";
     private HttpClient client;
@@ -229,6 +227,7 @@ public class Handler extends Thread {
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI(baseURI + extension))
+                .headers("Content-Type", "text/plain;charset=UTF-8")
                 .POST(publisher)
                 .build();
         return client.send(request, BodyHandlers.ofString());
@@ -246,25 +245,34 @@ public class Handler extends Thread {
     }
 
     private void startMessage() throws URISyntaxException, IOException, InterruptedException {
-        globalUser = scanner.next().trim(); 
+        System.out.println(get("/messages", "get", "value").body());
+        globalUser = scanner.next().trim();
         String msg = scanner.nextLine().trim();
         System.out.println("Started coversation with " + globalUser);
         System.out.println("Sending to " + globalUser + (msg == "" ? ":" : (":\nMe:" + msg)));
+        String contents = username + "," + globalUser;
+        System.out.println(contents);
         HttpResponse<String> response = post("/chats",
-                HttpRequest.BodyPublishers.ofString(username + "," + globalUser));
+                HttpRequest.BodyPublishers.ofString(contents));
         System.out.println(response.body());
         sendMessage(msg);
     }
 
     private void getClientID() throws URISyntaxException, IOException, InterruptedException {
-        clientID = Integer.parseInt(get( "/users", "username", username).body());
+        clientID = Integer.parseInt(get("/users", "username", username).body());
         System.out.println(clientID);
         System.out.println("GET: Client ID");
     }
 
     private void sendMessage(String msg) throws URISyntaxException, IOException, InterruptedException {
-        int chatID = Integer.parseInt(get( "/users", "username", globalUser).body());
-        HttpResponse<String> response =  post("/messages",HttpRequest.BodyPublishers.ofString(chatID+msg));
-        S
+        int chatID = Integer.parseInt(get("/users", "username", globalUser).body());
+        String contents = jsonify(chatID + "," + msg);
+        System.out.println(chatID + " fetch sendmessage");
+        HttpResponse<String> response = post("/messages", HttpRequest.BodyPublishers.ofString(contents));
+        System.out.println(response.body());
+    }
+
+    private String jsonify(String s) {
+        return "[{" + s + "}]";
     }
 }
