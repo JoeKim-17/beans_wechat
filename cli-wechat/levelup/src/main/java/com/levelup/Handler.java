@@ -1,6 +1,7 @@
 package com.levelup;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
@@ -8,19 +9,20 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.levelup.model.*;
+import com.sun.net.httpserver.HttpServer;
 
 public class Handler extends Thread {
     private Scanner scanner;
     private Logger logger;
     private final String baseURI = "http://wechat-beans-app.eu-west-1.elasticbeanstalk.com";
-    // private final String baseURI = "http://localhost:8080";
     private String globalUser = "";
     private String username = "";
     private HttpClient client;
@@ -116,7 +118,7 @@ public class Handler extends Thread {
                         break;
                     case "--login":
                         System.out.println("Duncan begin");
-                        login();
+                        String accessCode = login();
                         break;
                     default:
                         if (command.startsWith("--")) {
@@ -137,20 +139,57 @@ public class Handler extends Thread {
 
     }
 
-    private void login() throws URISyntaxException, IOException, InterruptedException {
-        String clientId_secret = "Iv1.e7597fd0dd9b7d63";
-        String redirect_uri = "http://localhost:8080/";
-        String clientLoginURL = "https://github.com/login/oauth/authorize?client_id=" + clientId_secret
-                + "&redirect_uri=" + redirect_uri;
-        System.out.println(clientLoginURL);
+    private Optional<String> code = Optional.empty();
 
-        // HttpRequest request = HttpRequest.newBuilder()
+    private String login() throws URISyntaxException, IOException, InterruptedException {
+        String stringCode = "";
+        String clientId_secret = "Iv1.e7597fd0dd9b7d63";
+        String redirect_uri = "http://localhost:8080";
+        String clientLoginURL = "https://github.com/login/oauth/authorize?client_id=" + clientId_secret
+                + "&redirect_uri=" + redirect_uri + "/login&scope=user";
+        System.out.println(clientLoginURL);
+        String resp = "Close windows";
+        try {
+
+            HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
+            server.createContext("/login", exchange -> {
+                String query = exchange.getRequestURI().getQuery();
+                if (query != null && query.startsWith("code=")) {
+                    code = Optional.of(query.substring(5));
+                    System.out.println("one");
+                    exchange.sendResponseHeaders(200, resp.getBytes().length);
+                    System.out.println("two`");
+                    exchange.getResponseBody().write(resp.getBytes());
+                    System.out.println("three");
+                } else {
+                    exchange.sendResponseHeaders(401, 0);
+                }
+                exchange.close();
+                server.stop(0);
+            });
+            server.start();
+            while (code.isEmpty()) {
+                Thread.sleep(50);
+            }
+            stringCode = code.get();
+            System.out.println("DEBUG: " + stringCode);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println(stringCode);
+        // HttpResponse<JsonNode> response = HttpRequest.newBuilder()
         // .uri(new URI(clientLoginURL))
-        // .headers("Content-Type", "text/plain;charset=UTF-8")
-        // .POST(HttpRequest.BodyPublishers.noBody())
-        // .build();
+        // .header("content-type", "application/x-www-form-urlencoded")
+        // .post(HttpRequest)
+        // .field("client_id", Global.AUTH0_CLIENT_ID)
+        // .field("scope", "openid profile email")
+        // .field("audience", Global.AUTH0_AUDIENCE)
+        // .asJson();
+        // new AU
+        // get("/users/login", redirect_uri, clientLoginURL)
         // HttpResponse resp = client.send(request, BodyHandlers.ofString());
         // System.err.println(resp.body());
+        return stringCode;
     }
 
     private String processMsg(String command) throws URISyntaxException, IOException, InterruptedException {

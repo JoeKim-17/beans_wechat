@@ -40,15 +40,15 @@
   <build>
     <pluginManagement>
       <plugins>
-        
-      <plugin>
-        <artifactId>maven-jlink-plugin</artifactId>
-        <version>3.2.0</version>
-        <extensions>true</extensions>
-        <!-- <configuration>
+
+        <plugin>
+          <artifactId>maven-jlink-plugin</artifactId>
+          <version>3.2.0</version>
+          <extensions>true</extensions>
+          <!-- <configuration>
           <launcher>levelup=module-info/com.levelup.Client</launcher> 
         </configuration> -->
-      </plugin>
+        </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-jar-plugin</artifactId>
