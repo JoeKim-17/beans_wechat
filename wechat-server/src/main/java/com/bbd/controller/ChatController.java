@@ -2,7 +2,6 @@ package com.bbd.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,6 +23,11 @@ public class ChatController {
     return chatDao.getAllChats();
   }
 
+  @RequestMapping(value = "/userchat/{sender}/{receiver}", method = RequestMethod.GET)
+  public String getUserChat(@PathVariable String sender, @PathVariable String receiver) {
+    return chatDao.getUserChat(sender, receiver);
+  }
+
   @RequestMapping(value = "/{id}", method = RequestMethod.GET)
   public String getChatById(@PathVariable("id") int ChatId) {
     return chatDao.getChatById(ChatId);
@@ -35,7 +39,7 @@ public class ChatController {
   }
 
   @RequestMapping(method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-  public String insertChat(@Validated @RequestBody Chat chat) {
+  public String insertChat(@RequestBody Chat chat) {
     return chatDao.insertChatToDb(chat);
   }
 

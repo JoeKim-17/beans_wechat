@@ -31,6 +31,7 @@ public class MessageDao {
 
       message.setChatID(resultSet.getInt("ChatId"));
       message.setContent(resultSet.getString("Content"));
+      message.setCreatedAt(resultSet.getTimestamp("CreatedAt"));
 
       return message;
     }

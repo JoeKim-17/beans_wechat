@@ -13,6 +13,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import com.bbd.model.Chat;
+import com.bbd.model.CustomObject;
 import com.google.gson.Gson;
 
 @Repository
@@ -32,8 +33,24 @@ public class ChatDao {
       chat.setChatID(resultSet.getInt("ChatId"));
       chat.setSender(resultSet.getString("Sender"));
       chat.setReceiver(resultSet.getString("Receiver"));
+      chat.setCreatedAt(resultSet.getTimestamp("CreatedAt"));
 
       return chat;
+    }
+  }
+
+  private static class CustomObjectRowMapper implements RowMapper<CustomObject> {
+
+    @Override
+    public CustomObject mapRow(ResultSet resultSet, int i) throws SQLException {
+      CustomObject customObject = new CustomObject();
+
+      customObject.setSenderUserName(resultSet.getString("SenderName"));
+      customObject.setReceiverUserName(resultSet.getString("ReceiverName"));
+      customObject.setContent(resultSet.getString("Content"));
+      customObject.setCreatedAt(resultSet.getDate("CreatedAt"));
+
+      return customObject;
     }
   }
 
@@ -66,6 +83,29 @@ public class ChatDao {
     }
 
     String json = new Gson().toJson(chat);
+
+    return json;
+  }
+
+  public String getUserChat(String senderUserName, String receiverUserName) {
+    final String sql = "EXECUTE GetUserChat ?, ?";
+
+    List<CustomObject> chatData;
+    try {
+      chatData = jdbcTemplate.query(dbQuery + sql, new CustomObjectRowMapper(),
+          new Object[] { senderUserName, receiverUserName });
+
+    } catch (EmptyResultDataAccessException e) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage()).toString();
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(e.getMessage()).toString();
+    }
+
+    if (chatData.isEmpty()) {
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Record not found").toString();
+    }
+
+    String json = new Gson().toJson(chatData);
 
     return json;
   }
