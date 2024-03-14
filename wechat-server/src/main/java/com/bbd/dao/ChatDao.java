@@ -48,7 +48,7 @@ public class ChatDao {
       customObject.setSenderUserName(resultSet.getString("SenderName"));
       customObject.setReceiverUserName(resultSet.getString("ReceiverName"));
       customObject.setContent(resultSet.getString("Content"));
-      customObject.setCreatedAt(resultSet.getDate("CreatedAt"));
+      customObject.setCreatedAt(resultSet.getTimestamp("CreatedAt"));
 
       return customObject;
     }
@@ -58,7 +58,7 @@ public class ChatDao {
 
     List<Chat> chats = null;
     try {
-      final String sql = "SELECT * FROM Chat";
+      final String sql = "SELECT ChatId, Sender, Receiver, CreatedAt FROM Chat";
       chats = jdbcTemplate.query(dbQuery + sql, new ChatRowMapper());
     } catch (EmptyResultDataAccessException e) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage()).toString();
@@ -74,7 +74,7 @@ public class ChatDao {
   public String getChatById(int ChatId) {
     Chat chat;
     try {
-      final String sql = "SELECT ChatId, Sender, Receiver FROM Chat WHERE ChatId = ?";
+      final String sql = "SELECT ChatId, Sender, Receiver, CreatedAt FROM Chat WHERE ChatId = ?";
       chat = jdbcTemplate.queryForObject(dbQuery + sql, new ChatRowMapper(), ChatId);
     } catch (EmptyResultDataAccessException e) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage()).toString();
