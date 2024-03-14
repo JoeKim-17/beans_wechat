@@ -1,6 +1,6 @@
 package com.bbd.model;
 
-import java.util.Date;
+import java.sql.Timestamp;
 
 public class CustomObject {
 
@@ -9,7 +9,7 @@ public class CustomObject {
   private String receiverUserName;
   private String senderUserName;
   private String content;
-  private Date CreatedAt;
+  private Timestamp CreatedAt;
 
   public CustomObject() {}
 
@@ -53,11 +53,11 @@ public class CustomObject {
     this.content = content;
   }
 
-  public Date getCreatedAt() {
+  public Timestamp getCreatedAt() {
     return CreatedAt;
   }
 
-  public void setCreatedAt(Date createdAt) {
-    CreatedAt = createdAt;
+  public void setCreatedAt(Timestamp timestamp) {
+    CreatedAt = timestamp;
   }
 }
