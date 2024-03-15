@@ -7,6 +7,7 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Arrays;
 import java.util.Optional;
@@ -17,6 +18,8 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.levelup.model.*;
 import com.sun.net.httpserver.HttpServer;
+import com.google.gson.JsonObject;
+
 
 public class Handler extends Thread {
     private Scanner scanner;
@@ -99,13 +102,14 @@ public class Handler extends Thread {
                         System.out.println(findUser(user) ? "Added Friend" : "Can't find user");
                         break;
                     case "--signin":
-                        String authorizationUrl = "https://github.com/login/oauth/authorize?client_id=Iv1.e7597fd0dd9b7d63&redirect_uri=http://localhost:8080/";
-                        System.out.println("Please visit the following URL to authenticate:");
-                        System.out.println(authorizationUrl);
-                        System.out.println("Enter Username:");
-                        username = scanner.next().trim();
-                        System.out.println(username + "+++++++++++++++++++++++++++++");
-                        getClientID();
+                        String code = login();
+                        JsonObject accessTokenObject = new JsonObject();
+                        accessTokenObject.addProperty("client_id", "Iv1.e7597fd0dd9b7d63");
+                        accessTokenObject.addProperty("code", code);
+                        accessTokenObject.addProperty("client_secret", "a654be051d1ab5327aea912734f4e75a4f49bd6");
+                        String s = new Gson().toJson(accessTokenObject);
+                        HttpResponse response = getAccessToken("https://github.com/login/oauth/access_token", BodyPublishers.ofString(s));
+                        System.out.println((response));
                         break;
                     case "--addgroupmember":
                         String group = scanner.next().trim();
@@ -178,6 +182,17 @@ public class Handler extends Thread {
         }
         System.out.println(stringCode); 
         return stringCode;
+    }
+
+    private HttpResponse<JsonObject> getAccessToken(String url, HttpRequest.BodyPublisher publisher)
+            throws URISyntaxException, IOException, InterruptedException {
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(new URI(url))
+                .header("accept", "application/json")
+                .POST(publisher)
+                .build();
+        return client.send(request, BodyHandlers.ofString());
     }
 
     private String processMsg(String command) throws URISyntaxException, IOException, InterruptedException {
