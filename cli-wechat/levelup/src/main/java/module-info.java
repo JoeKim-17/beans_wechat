@@ -1,6 +1,7 @@
 
 module jlinkModule {
-    requires java.logging;
     requires java.net.http;
+    requires jdk.httpserver;
     requires com.google.gson;
+    exports com.levelup;
 }   

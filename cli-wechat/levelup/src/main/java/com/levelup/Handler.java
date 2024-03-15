@@ -9,8 +9,6 @@ import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Arrays;
 import java.util.Scanner;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -18,7 +16,6 @@ import com.levelup.model.*;
 
 public class Handler extends Thread {
     private Scanner scanner;
-    private Logger logger;
     private final String baseURI = "http://wechat-beans-app.eu-west-1.elasticbeanstalk.com";
     // private final String baseURI = "http://localhost:8080";
     private String globalUser = "";
@@ -26,15 +23,11 @@ public class Handler extends Thread {
     private HttpClient client;
     private int clientID;
 
-    public Handler(Scanner scanner, Logger logger) {
+    public Handler(Scanner scanner) {
         this.scanner = scanner;
-        this.logger = logger;
         client = HttpClient.newHttpClient();
     }
 
-    public Handler(Scanner scanner) {
-        this.scanner = scanner;
-    }
 
     @Override
     public void run() {
@@ -205,7 +198,6 @@ public class Handler extends Thread {
     private void scanUsers(String users) {
         // String users = scanner.nextLine().trim();
         String[] usersArr = users.split(" ");
-        logger.log(Level.WARNING, Arrays.toString(usersArr));
         for (String s : usersArr) {
             System.out.println(findUser(s) ? "Added Users" : "Cannot find " + s);
         }
