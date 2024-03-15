@@ -1,6 +1,7 @@
 package com.bbd.controller;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.bbd.dao.MessageDao;
 import com.bbd.model.Message;
+import com.google.gson.Gson;
 
 @RestController
 @RequestMapping("/messages")
@@ -22,11 +24,21 @@ public class MessageController {
   @Autowired
   private MessageDao messageDao;
   private Map<Integer, String> notifcations = new HashMap<>();
-  @RequestMapping(value = "/user",method = RequestMethod.GET)
-  public String getUserMessages(@RequestHeader("username") String username){
+  private int trackSize = 0;
 
-    return "";
+  @RequestMapping(value = "/notifactions/{user}", method = RequestMethod.GET)
+  public String getUserMessages(@PathVariable String user) {
+    System.out.println("DEBUG: THIS IS NTOIFS");
+    if (notifcations.size() == trackSize) {
+      return "";
+    } else {
+      List<String> values = notifcations.values().stream().toList();
+      System.out.println(values);
+      trackSize = notifcations.size();
+      return values.toString();
+    }
   }
+
   @RequestMapping(method = RequestMethod.GET)
   public String getAllMessages() {
     return messageDao.getAllMessages();
@@ -53,10 +65,13 @@ public class MessageController {
    * @param message A Message that has a chatID and content
    * @return error String
    */
-  @RequestMapping(method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-  public String insertMessage(@RequestBody Message message) {
+  @RequestMapping(method = RequestMethod.POST, consumes = MediaType.ALL_VALUE)
+  public String insertMessage(@RequestBody String msg) {
+    Gson gson = new Gson();
+    System.out.println("EDGUB: " + msg);
+    Message message = gson.fromJson(msg, Message.class);
     notifcations.put(message.getChatID(), message.getContent());
+    System.out.println("GUBED: " + message);
     return messageDao.insertMessageToDb(message);
   }
-
 }
