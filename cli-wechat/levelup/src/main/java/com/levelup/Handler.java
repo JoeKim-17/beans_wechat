@@ -18,6 +18,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.levelup.model.Chat;
 import com.levelup.model.Message;
+import com.sun.net.httpserver.HttpServer;
 
 public class Handler extends Thread {
     private Scanner scanner;
@@ -100,9 +101,8 @@ public class Handler extends Thread {
                         System.out.println(findUser(user) ? "Added Friend" : "Can't find user");
                         break;
                     case "--signin":
-                        String authorizationUrl = "https://github.com/login/oauth/authorize?client_id=Iv1.e7597fd0dd9b7d63&redirect_uri=http://localhost:8080/";
                         System.out.println("Please visit the following URL to authenticate:");
-                        System.out.println(authorizationUrl);
+                        login();
                         System.out.println("Enter Username:");
                         username = scanner.next().trim();
                         System.out.println(username + "+++++++++++++++++++++++++++++");
@@ -170,14 +170,33 @@ public class Handler extends Thread {
                 Thread.sleep(50);
             }
             stringCode = code.get();
+            
+            String json = "https://github.com/login/oauth/access_token/json?client_id=" + code.get()
+            + "&client_secret=ea654be051d1ab5327aea912734f4e75a4f49bd6" + "&redirect_uri="
+            + redirect_uri;
+            System.out.println(json);
+            server.createContext("/loggedin", exchange -> {
+                String query = exchange.getRequestURI().getQuery();
+                if (query != null) {
+                    System.out.println(query);
+                    exchange.sendResponseHeaders(200, "Finished process".getBytes().length);
+                    exchange.getResponseBody().write("Finished process".getBytes());
+                    System.out.println(json);
+                }
+            });
+            // "/oauth/access_token/json" +
+            // "?client_id=${gitHuboverflow.auth.client.clientId}" +
+            // "&client_secret=${gitHuboverflow.auth.client.secret}" +
+            // "&redirect_uri=${gitHuboverflow.auth.server.redirectUri}", produces =
+            // "application/x-www-form-urlencoded"
             System.out.println("DEBUG: " + stringCode);
-            //get access code
-
+            // System.out.println(tokenResponse.body());
+            // get access code
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println(stringCode); 
+        System.out.println(stringCode);
         return stringCode;
     }
 
