@@ -9,7 +9,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.logging.Level;
@@ -18,16 +17,14 @@ import java.util.logging.Logger;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.levelup.model.*;
 import com.sun.net.httpserver.HttpServer;
 
 public class Handler extends Thread {
     private Scanner scanner;
     private Logger logger;
-    // private final String baseURI =
-    // "http://wechat-beans-app.eu-west-1.elasticbeanstalk.com";
-    private final String baseURI = "http://localhost:8080";
+    private final String baseURI = "http://wechat-beans-app.eu-west-1.elasticbeanstalk.com";
+    // private final String baseURI = "http://localhost:8080";
     private String globalUser = "";
     private String username = "";
     private int chatID = -1;
@@ -150,7 +147,7 @@ public class Handler extends Thread {
         String clientId_secret = "Iv1.e7597fd0dd9b7d63";
         String redirect_uri = "http://localhost:8080";
         String clientLoginURL = "https://github.com/login/oauth/authorize?client_id=" + clientId_secret
-                + "&redirect_uri=" + redirect_uri + "/login&scope=user";
+                + "&redirect_uri=" + redirect_uri + "/login&scope=read:user";
         System.out.println(clientLoginURL);
         String resp = "Close windows";
         try {
@@ -165,6 +162,7 @@ public class Handler extends Thread {
                     System.out.println("two`");
                     exchange.getResponseBody().write(resp.getBytes());
                     System.out.println("three");
+                    System.out.println("DEVBUG : "+query);
                 } else {
                     exchange.sendResponseHeaders(401, 0);
                 }
@@ -177,6 +175,7 @@ public class Handler extends Thread {
             }
             stringCode = code.get();
             System.out.println("DEBUG: " + stringCode);
+            HttpClient 
         } catch (Exception e) {
             e.printStackTrace();
         }
