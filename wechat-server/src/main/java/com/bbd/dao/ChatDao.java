@@ -16,7 +16,6 @@ import com.bbd.model.Chat;
 import com.bbd.model.CustomObject;
 import com.google.gson.Gson;
 
-
 @Repository
 public class ChatDao {
 
