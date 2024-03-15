@@ -5,4 +5,5 @@ module jlinkModule {
     requires jdk.httpserver;
     requires jdk.crypto.cryptoki;
     requires jdk.crypto.ec;
+    requires java.logging;
 }   
