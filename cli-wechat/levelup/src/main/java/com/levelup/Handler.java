@@ -11,6 +11,7 @@ import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import com.google.gson.Gson;
@@ -22,7 +23,6 @@ public class Handler extends Thread {
     private Scanner scanner;
     private Logger logger;
     private final String baseURI = "http://wechat-beans-app.eu-west-1.elasticbeanstalk.com";
-    // private final String baseURI = "http://localhost:8080";
     private String globalUser = "";
     private String username = "";
     private HttpClient client;
@@ -176,7 +176,19 @@ public class Handler extends Thread {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println(stringCode); 
+        System.out.println(stringCode);
+        // HttpResponse<JsonNode> response = HttpRequest.newBuilder()
+        // .uri(new URI(clientLoginURL))
+        // .header("content-type", "application/x-www-form-urlencoded")
+        // .post(HttpRequest)
+        // .field("client_id", Global.AUTH0_CLIENT_ID)
+        // .field("scope", "openid profile email")
+        // .field("audience", Global.AUTH0_AUDIENCE)
+        // .asJson();
+        // new AU
+        // get("/users/login", redirect_uri, clientLoginURL)
+        // HttpResponse resp = client.send(request, BodyHandlers.ofString());
+        // System.err.println(resp.body());
         return stringCode;
     }
 
