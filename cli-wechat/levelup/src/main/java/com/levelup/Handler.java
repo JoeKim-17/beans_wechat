@@ -184,7 +184,7 @@ public class Handler extends Thread {
         return stringCode;
     }
 
-    private HttpResponse<JsonObject> getAccessToken(String url, HttpRequest.BodyPublisher publisher)
+    private HttpResponse<String> getAccessToken(String url, HttpRequest.BodyPublisher publisher)
             throws URISyntaxException, IOException, InterruptedException {
 
         HttpRequest request = HttpRequest.newBuilder()
