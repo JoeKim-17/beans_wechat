@@ -4,16 +4,21 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.security.Security;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.net.ssl.SSLContext;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.levelup.model.*;
@@ -104,12 +109,31 @@ public class Handler extends Thread {
                     case "--signin":
                         String code = login();
                         JsonObject accessTokenObject = new JsonObject();
-                        accessTokenObject.addProperty("client_id", "Iv1.e7597fd0dd9b7d63");
+                        accessTokenObject.addProperty("client_id", "baacd8518020cf9e7322");
                         accessTokenObject.addProperty("code", code);
                         accessTokenObject.addProperty("client_secret", "a654be051d1ab5327aea912734f4e75a4f49bd6");
                         String s = new Gson().toJson(accessTokenObject);
-                        HttpResponse response = getAccessToken("https://github.com/login/oauth/access_token", BodyPublishers.ofString(s));
-                        System.out.println((response));
+                        HttpRequest request = HttpRequest.newBuilder()
+                                .uri(URI.create("https://github.com/login/oauth/access_token"))
+                                .header("Content-Type", "application/x-www-form-urlencoded")
+                                .POST(HttpRequest.BodyPublishers.ofString(
+                                        String.format("client_id=%s&client_secret=%s&code=%s", "Iv1.e7597fd0dd9b7d63", "1d8d9a42510aa99a1199018dfcae0fd2a5c15d30",
+                                                URLEncoder.encode(code, "UTF-8"))))
+                                .build();
+
+                        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+                        System.out.println(response.body());
+                        System.out.println(response.body().split("&")[0].split("=")[1]);
+
+                        HttpRequest request1 = HttpRequest.newBuilder()
+                        .uri(URI.create("https://api.github.com/user?access_token="+response.body().split("&")[0].split("=")[1]))
+                        .header("Content-Type", "application/x-www-form-urlencoded")
+                        .GET()
+                        .build();
+
+                        HttpResponse<String> response1 = client.send(request, HttpResponse.BodyHandlers.ofString());
+                        
+                        System.out.println((response1.body()));
                         break;
                     case "--addgroupmember":
                         String group = scanner.next().trim();
@@ -152,7 +176,7 @@ public class Handler extends Thread {
         String clientLoginURL = "https://github.com/login/oauth/authorize?client_id=" + clientId_secret
                 + "&redirect_uri=" + redirect_uri + "/login&scope=user";
         System.out.println(clientLoginURL);
-        String resp = "Close windows";
+        String resp = "Authentication Successful, you can close window";
         try {
 
             HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
@@ -160,11 +184,8 @@ public class Handler extends Thread {
                 String query = exchange.getRequestURI().getQuery();
                 if (query != null && query.startsWith("code=")) {
                     code = Optional.of(query.substring(5));
-                    System.out.println("one");
                     exchange.sendResponseHeaders(200, resp.getBytes().length);
-                    System.out.println("two`");
                     exchange.getResponseBody().write(resp.getBytes());
-                    System.out.println("three");
                 } else {
                     exchange.sendResponseHeaders(401, 0);
                 }
@@ -176,11 +197,9 @@ public class Handler extends Thread {
                 Thread.sleep(50);
             }
             stringCode = code.get();
-            System.out.println("DEBUG: " + stringCode);
         } catch (Exception e) {
             e.printStackTrace();
-        }
-        System.out.println(stringCode); 
+        } 
         return stringCode;
     }
 
