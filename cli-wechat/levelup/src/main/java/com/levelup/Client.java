@@ -18,6 +18,7 @@ public class Client {
             fh.setFormatter(formatter);
             Scanner scanner = new Scanner(System.in);
             new Handler(scanner, logger).start();
+            // new ReceiverHandler().start();
         } catch (SecurityException e) {
             e.printStackTrace();
         } catch (IOException e) {

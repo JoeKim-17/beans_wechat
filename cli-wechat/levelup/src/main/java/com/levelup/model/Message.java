@@ -13,6 +13,10 @@ public class Message {
     this.receiver = receiver;
     this.content = content;
   }
+  public Message(int ChatId, String content){
+    this.chatID = ChatId;
+    this.content = content;
+  }
 
   public Message() {}
 
