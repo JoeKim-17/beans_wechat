@@ -108,16 +108,11 @@ public class Handler extends Thread {
                         break;
                     case "--signin":
                         String code = login();
-                        JsonObject accessTokenObject = new JsonObject();
-                        accessTokenObject.addProperty("client_id", "baacd8518020cf9e7322");
-                        accessTokenObject.addProperty("code", code);
-                        accessTokenObject.addProperty("client_secret", "a654be051d1ab5327aea912734f4e75a4f49bd6");
-                        String s = new Gson().toJson(accessTokenObject);
                         HttpRequest request = HttpRequest.newBuilder()
                                 .uri(URI.create("https://github.com/login/oauth/access_token"))
                                 .header("Content-Type", "application/x-www-form-urlencoded")
                                 .POST(HttpRequest.BodyPublishers.ofString(
-                                        String.format("client_id=%s&client_secret=%s&code=%s", "Iv1.e7597fd0dd9b7d63", "1d8d9a42510aa99a1199018dfcae0fd2a5c15d30",
+                                        String.format("client_id=%s&client_secret=%s&code=%s", "baacd8518020cf9e7322", "d95a1c43b6651c50ed47a58c109f648c45d3f3b2",
                                                 URLEncoder.encode(code, "UTF-8"))))
                                 .build();
 
@@ -126,12 +121,13 @@ public class Handler extends Thread {
                         System.out.println(response.body().split("&")[0].split("=")[1]);
 
                         HttpRequest request1 = HttpRequest.newBuilder()
-                        .uri(URI.create("https://api.github.com/user?access_token="+response.body().split("&")[0].split("=")[1]))
+                        .uri(URI.create("https://api.github.com/user"))
                         .header("Content-Type", "application/x-www-form-urlencoded")
+                        .header("Authorization", "Bearer "+(response.body().split("&")[0].split("=")[1]).trim())
                         .GET()
                         .build();
 
-                        HttpResponse<String> response1 = client.send(request, HttpResponse.BodyHandlers.ofString());
+                        HttpResponse<String> response1 = client.send(request1, HttpResponse.BodyHandlers.ofString());
                         
                         System.out.println((response1.body()));
                         break;
@@ -171,10 +167,9 @@ public class Handler extends Thread {
 
     private String login() throws URISyntaxException, IOException, InterruptedException {
         String stringCode = "";
-        String clientId_secret = "Iv1.e7597fd0dd9b7d63";
-        String redirect_uri = "http://localhost:8080";
+        String clientId_secret = "baacd8518020cf9e7322";
         String clientLoginURL = "https://github.com/login/oauth/authorize?client_id=" + clientId_secret
-                + "&redirect_uri=" + redirect_uri + "/login&scope=user";
+                + "&scope=user";
         System.out.println(clientLoginURL);
         String resp = "Authentication Successful, you can close window";
         try {
