@@ -11,18 +11,19 @@ import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.Scanner;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
-import com.levelup.model.*;
-import com.sun.net.httpserver.HttpServer;
+import com.levelup.model.Chat;
+import com.levelup.model.Message;
 
 public class Handler extends Thread {
     private Scanner scanner;
     private Logger logger;
     private final String baseURI = "http://wechat-beans-app.eu-west-1.elasticbeanstalk.com";
+    // private final String baseURI = "http://localhost:8080";
     private String globalUser = "";
     private String username = "";
     private HttpClient client;
@@ -143,9 +144,9 @@ public class Handler extends Thread {
 
     private String login() throws URISyntaxException, IOException, InterruptedException {
         String stringCode = "";
-        String clientId_secret = "Iv1.e7597fd0dd9b7d63";
+        String clientId = "Iv1.e7597fd0dd9b7d63";
         String redirect_uri = "http://localhost:8080";
-        String clientLoginURL = "https://github.com/login/oauth/authorize?client_id=" + clientId_secret
+        String clientLoginURL = "https://github.com/login/oauth/authorize?client_id=" + clientId
                 + "&redirect_uri=" + redirect_uri + "/login&scope=user";
         System.out.println(clientLoginURL);
         String resp = "Close windows";
@@ -156,11 +157,8 @@ public class Handler extends Thread {
                 String query = exchange.getRequestURI().getQuery();
                 if (query != null && query.startsWith("code=")) {
                     code = Optional.of(query.substring(5));
-                    System.out.println("one");
                     exchange.sendResponseHeaders(200, resp.getBytes().length);
-                    System.out.println("two`");
                     exchange.getResponseBody().write(resp.getBytes());
-                    System.out.println("three");
                 } else {
                     exchange.sendResponseHeaders(401, 0);
                 }
@@ -173,22 +171,13 @@ public class Handler extends Thread {
             }
             stringCode = code.get();
             System.out.println("DEBUG: " + stringCode);
+            //get access code
+
+
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println(stringCode);
-        // HttpResponse<JsonNode> response = HttpRequest.newBuilder()
-        // .uri(new URI(clientLoginURL))
-        // .header("content-type", "application/x-www-form-urlencoded")
-        // .post(HttpRequest)
-        // .field("client_id", Global.AUTH0_CLIENT_ID)
-        // .field("scope", "openid profile email")
-        // .field("audience", Global.AUTH0_AUDIENCE)
-        // .asJson();
-        // new AU
-        // get("/users/login", redirect_uri, clientLoginURL)
-        // HttpResponse resp = client.send(request, BodyHandlers.ofString());
-        // System.err.println(resp.body());
+        System.out.println(stringCode); 
         return stringCode;
     }
 
@@ -307,14 +296,8 @@ public class Handler extends Thread {
             clientID = Integer.parseInt(ans);
             System.out.println("DEF ANS: " + ans);
         } catch (Exception e) {
-            System.out.println("New Username: ");
-            username = scanner.next();
-            System.out.println("Enter email: ");
-            String email = scanner.next();
-            System.out.println("Enter Phone number (Integer): ");
-            String number = scanner.next();
-            String contents = username + "," + email + "," + number;
-            post("/users", HttpRequest.BodyPublishers.ofString(contents));
+            System.out.println("User not found");
+            e.printStackTrace();
         }
         System.out.println(clientID);
         System.out.println("GET: Client ID");
