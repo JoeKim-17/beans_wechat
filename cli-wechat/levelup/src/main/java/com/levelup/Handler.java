@@ -11,32 +11,29 @@ import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.Scanner;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
-import com.levelup.model.*;
+import com.google.gson.JsonElement;
+import com.levelup.model.*; 
 import com.sun.net.httpserver.HttpServer;
 
 public class Handler extends Thread {
     private Scanner scanner;
-    private Logger logger;
     private final String baseURI = "http://wechat-beans-app.eu-west-1.elasticbeanstalk.com";
     // private final String baseURI = "http://localhost:8080";
     private String globalUser = "";
     private String username = "";
+    private int chatID = -1;
     private HttpClient client;
     private int clientID;
-
-    public Handler(Scanner scanner, Logger logger) {
-        this.scanner = scanner;
-        this.logger = logger;
-        client = HttpClient.newHttpClient();
-    }
+    private ReceiverHandler receiverForMsg;
 
     public Handler(Scanner scanner) {
         this.scanner = scanner;
+        client = HttpClient.newHttpClient();
     }
+
 
     @Override
     public void run() {
@@ -98,10 +95,9 @@ public class Handler extends Thread {
                         String user = scanner.next().trim();
                         System.out.println(findUser(user) ? "Added Friend" : "Can't find user");
                         break;
-                    case "--signin":
-                        String authorizationUrl = "https://github.com/login/oauth/authorize?client_id=Iv1.e7597fd0dd9b7d63&redirect_uri=http://localhost:8080/";
+                    case "--signin": 
                         System.out.println("Please visit the following URL to authenticate:");
-                        System.out.println(authorizationUrl);
+                        login();
                         System.out.println("Enter Username:");
                         username = scanner.next().trim();
                         System.out.println(username + "+++++++++++++++++++++++++++++");
@@ -143,10 +139,11 @@ public class Handler extends Thread {
 
     private String login() throws URISyntaxException, IOException, InterruptedException {
         String stringCode = "";
-        String clientId_secret = "Iv1.e7597fd0dd9b7d63";
-        String redirect_uri = "http://localhost:8080";
-        String clientLoginURL = "https://github.com/login/oauth/authorize?client_id=" + clientId_secret
+        String clientId = "Iv1.e7597fd0dd9b7d63";
+        String redirect_uri = "http://localhost:8080"; 
+        String clientLoginURL = "https://github.com/login/oauth/authorize?client_id=" + clientId
                 + "&redirect_uri=" + redirect_uri + "/login&scope=user";
+
         System.out.println(clientLoginURL);
         String resp = "Close windows";
         try {
@@ -156,11 +153,8 @@ public class Handler extends Thread {
                 String query = exchange.getRequestURI().getQuery();
                 if (query != null && query.startsWith("code=")) {
                     code = Optional.of(query.substring(5));
-                    System.out.println("one");
                     exchange.sendResponseHeaders(200, resp.getBytes().length);
-                    System.out.println("two`");
                     exchange.getResponseBody().write(resp.getBytes());
-                    System.out.println("three");
                 } else {
                     exchange.sendResponseHeaders(401, 0);
                 }
@@ -172,11 +166,34 @@ public class Handler extends Thread {
                 Thread.sleep(50);
             }
             stringCode = code.get();
+            
+            String json = "https://github.com/login/oauth/access_token/json?client_id=" + code.get()
+            + "&client_secret=ea654be051d1ab5327aea912734f4e75a4f49bd6" + "&redirect_uri="
+            + redirect_uri;
+            System.out.println(json);
+            server.createContext("/loggedin", exchange -> {
+                String query = exchange.getRequestURI().getQuery();
+                if (query != null) {
+                    System.out.println(query);
+                    exchange.sendResponseHeaders(200, "Finished process".getBytes().length);
+                    exchange.getResponseBody().write("Finished process".getBytes());
+                    System.out.println(json);
+                }
+            });
+            // "/oauth/access_token/json" +
+            // "?client_id=${gitHuboverflow.auth.client.clientId}" +
+            // "&client_secret=${gitHuboverflow.auth.client.secret}" +
+            // "&redirect_uri=${gitHuboverflow.auth.server.redirectUri}", produces =
+            // "application/x-www-form-urlencoded"
             System.out.println("DEBUG: " + stringCode);
+            // HttpClient 
+
+            // System.out.println(tokenResponse.body());
+            // get access code 
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println(stringCode); 
+        System.out.println(stringCode);
         return stringCode;
     }
 
@@ -232,7 +249,6 @@ public class Handler extends Thread {
     private void scanUsers(String users) {
         // String users = scanner.nextLine().trim();
         String[] usersArr = users.split(" ");
-        logger.log(Level.WARNING, Arrays.toString(usersArr));
         for (String s : usersArr) {
             System.out.println(findUser(s) ? "Added Users" : "Cannot find " + s);
         }
@@ -279,37 +295,63 @@ public class Handler extends Thread {
     private void startMessage() throws URISyntaxException, IOException, InterruptedException {
         globalUser = scanner.next().trim();
         String msg = scanner.nextLine().trim();
+        // get all chats for a certain user id and receiver username
         System.out.println("Started coversation with " + globalUser);
         System.out.println("Sending to " + globalUser + (msg == "" ? ":" : (":\nMe:" + msg)));
-        String json = jsonifyString(new Chat(-1, username, globalUser));
-        HttpResponse<String> response = post("/chats",
-                HttpRequest.BodyPublishers.ofString(json));
+        receiverForMsg = new ReceiverHandler(username, globalUser);
+        receiverForMsg.start();
+        sleep(50);
+        Chat c = new Chat(-1, username, globalUser);
+        String json = jsonifyString(c);
+        DEBUG(json);
+        HttpResponse<String> response = get("/chats/userchat/" + c.getSender() + "/" + c.getReceiver(), "get", "value");
+        DEBUG("chats response:" + response.body());
+        JsonArray allChats = new Gson().fromJson(response.body(), JsonArray.class);
+        allChats.asList().stream()
+                .forEach(obj -> printConvo(obj));
         if (msg != "")
             sendMessage(msg);
 
     }
 
+    private void printConvo(JsonElement json) {
+        // Lambda expression's parameter json cannot redeclare another local variable
+        // defined in an enclosing scope.
+        String content = json.getAsJsonObject().get("content").toString();
+        String name = json.getAsJsonObject().get("senderUserName").toString().replace(username, "me");
+        String tmStamp = json.getAsJsonObject().get("CreatedAt").toString();
+        chatID = json.getAsJsonObject().get("senderUserName").toString().equals("\"" + username + "\"")
+                ? Integer.parseInt(json.getAsJsonObject().get("ChatId").toString())
+                : chatID;
+        System.out.println(tmStamp.substring(1, tmStamp.length() - 1) + " " + name.replace("\"", "") + ": "
+                + content.substring(1, content.length() - 1));
+        DEBUG(chatID + "CHAT ID");
+        DEBUG(json.getAsJsonObject().get("senderUserName").toString());
+    }
+
     private void getClientID() throws URISyntaxException, IOException, InterruptedException {
         try {
-            String ans = get("/users", "username", username).body();
-            clientID = Integer.parseInt(ans);
-            System.out.println("DEF ANS: " + ans);
+            String allChat = get("/users", "get", "value").body();
+            DEBUG(allChat);
+
+            JsonArray convertedObject = new Gson().fromJson(allChat, JsonArray.class);
+            Optional<JsonElement> holdObject = convertedObject.asList().stream()
+                    .filter(chat -> chat.getAsJsonObject().get("UserName").getAsString().equals(username)).findFirst();
+            System.out.println("==================================");
+            String id = holdObject.get().getAsJsonObject().get("UserId").toString();
+            DEBUG(id);
+            clientID = Integer.parseInt(id);
+            System.out.println("DEF ID: " + clientID);
         } catch (Exception e) {
-            System.out.println("New Username: ");
-            username = scanner.next();
-            System.out.println("Enter email: ");
-            String email = scanner.next();
-            System.out.println("Enter Phone number (Integer): ");
-            String number = scanner.next();
-            String contents = username + "," + email + "," + number;
-            post("/users", HttpRequest.BodyPublishers.ofString(contents));
+            System.out.println("User not found");
+            e.printStackTrace();
         }
         System.out.println(clientID);
         System.out.println("GET: Client ID");
     }
 
     private void sendMessage(String msg) throws URISyntaxException, IOException, InterruptedException {
-        String json = jsonifyString(new Message(username, globalUser, msg));
+        String json = jsonifyString(new Message(chatID, msg));
         System.out.println("DEBUG json: " + json);
         HttpResponse<String> response = post("/messages", HttpRequest.BodyPublishers.ofString(json));
         System.out.println(response.body());
@@ -318,6 +360,12 @@ public class Handler extends Thread {
     private String jsonifyString(Object o) {
         Gson gson = new Gson();
         return gson.toJson(o);
+    }
+
+    private boolean DEBUG = true;
+
+    private void DEBUG(String s) {
+        System.out.print(DEBUG ? "DEBUG: " + s + "\n" : "");
     }
     /*
      * Registerd app

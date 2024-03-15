@@ -44,7 +44,7 @@ public class ChatDao {
     @Override
     public CustomObject mapRow(ResultSet resultSet, int i) throws SQLException {
       CustomObject customObject = new CustomObject();
-
+      customObject.setChatId(resultSet.getInt("ChatId"));;
       customObject.setSenderUserName(resultSet.getString("SenderName"));
       customObject.setReceiverUserName(resultSet.getString("ReceiverName"));
       customObject.setContent(resultSet.getString("Content"));
@@ -88,8 +88,8 @@ public class ChatDao {
   }
 
   public String getUserChat(String senderUserName, String receiverUserName) {
-    final String sql = "EXECUTE GetUserChat ?, ?";
-
+    final String sql = "EXECUTE getUserChat ?, ?";
+    System.out.println("DEBUG: "+senderUserName+","+receiverUserName+" = "+dbQuery+sql);
     List<CustomObject> chatData;
     try {
       chatData = jdbcTemplate.query(dbQuery + sql, new CustomObjectRowMapper(),
