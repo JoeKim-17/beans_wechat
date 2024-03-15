@@ -11,18 +11,15 @@ import java.net.http.HttpResponse.BodyHandlers;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.Scanner;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.levelup.model.*;
+import com.levelup.model.*; 
 import com.sun.net.httpserver.HttpServer;
 
 public class Handler extends Thread {
     private Scanner scanner;
-    private Logger logger;
     private final String baseURI = "http://wechat-beans-app.eu-west-1.elasticbeanstalk.com";
     // private final String baseURI = "http://localhost:8080";
     private String globalUser = "";
@@ -32,15 +29,11 @@ public class Handler extends Thread {
     private int clientID;
     private ReceiverHandler receiverForMsg;
 
-    public Handler(Scanner scanner, Logger logger) {
+    public Handler(Scanner scanner) {
         this.scanner = scanner;
-        this.logger = logger;
         client = HttpClient.newHttpClient();
     }
 
-    public Handler(Scanner scanner) {
-        this.scanner = scanner;
-    }
 
     @Override
     public void run() {
@@ -102,7 +95,9 @@ public class Handler extends Thread {
                         String user = scanner.next().trim();
                         System.out.println(findUser(user) ? "Added Friend" : "Can't find user");
                         break;
-                    case "--signin":
+                    case "--signin": 
+                        System.out.println("Please visit the following URL to authenticate:");
+                        login();
                         System.out.println("Enter Username:");
                         username = scanner.next().trim();
                         System.out.println(username + "+++++++++++++++++++++++++++++");
@@ -144,10 +139,11 @@ public class Handler extends Thread {
 
     private String login() throws URISyntaxException, IOException, InterruptedException {
         String stringCode = "";
-        String clientId_secret = "Iv1.e7597fd0dd9b7d63";
-        String redirect_uri = "http://localhost:8080";
-        String clientLoginURL = "https://github.com/login/oauth/authorize?client_id=" + clientId_secret
-                + "&redirect_uri=" + redirect_uri + "/login&scope=read:user";
+        String clientId = "Iv1.e7597fd0dd9b7d63";
+        String redirect_uri = "http://localhost:8080"; 
+        String clientLoginURL = "https://github.com/login/oauth/authorize?client_id=" + clientId
+                + "&redirect_uri=" + redirect_uri + "/login&scope=user";
+
         System.out.println(clientLoginURL);
         String resp = "Close windows";
         try {
@@ -157,12 +153,8 @@ public class Handler extends Thread {
                 String query = exchange.getRequestURI().getQuery();
                 if (query != null && query.startsWith("code=")) {
                     code = Optional.of(query.substring(5));
-                    System.out.println("one");
                     exchange.sendResponseHeaders(200, resp.getBytes().length);
-                    System.out.println("two`");
                     exchange.getResponseBody().write(resp.getBytes());
-                    System.out.println("three");
-                    System.out.println("DEVBUG : "+query);
                 } else {
                     exchange.sendResponseHeaders(401, 0);
                 }
@@ -174,8 +166,30 @@ public class Handler extends Thread {
                 Thread.sleep(50);
             }
             stringCode = code.get();
+            
+            String json = "https://github.com/login/oauth/access_token/json?client_id=" + code.get()
+            + "&client_secret=ea654be051d1ab5327aea912734f4e75a4f49bd6" + "&redirect_uri="
+            + redirect_uri;
+            System.out.println(json);
+            server.createContext("/loggedin", exchange -> {
+                String query = exchange.getRequestURI().getQuery();
+                if (query != null) {
+                    System.out.println(query);
+                    exchange.sendResponseHeaders(200, "Finished process".getBytes().length);
+                    exchange.getResponseBody().write("Finished process".getBytes());
+                    System.out.println(json);
+                }
+            });
+            // "/oauth/access_token/json" +
+            // "?client_id=${gitHuboverflow.auth.client.clientId}" +
+            // "&client_secret=${gitHuboverflow.auth.client.secret}" +
+            // "&redirect_uri=${gitHuboverflow.auth.server.redirectUri}", produces =
+            // "application/x-www-form-urlencoded"
             System.out.println("DEBUG: " + stringCode);
-            HttpClient 
+            // HttpClient 
+
+            // System.out.println(tokenResponse.body());
+            // get access code 
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -235,7 +249,6 @@ public class Handler extends Thread {
     private void scanUsers(String users) {
         // String users = scanner.nextLine().trim();
         String[] usersArr = users.split(" ");
-        logger.log(Level.WARNING, Arrays.toString(usersArr));
         for (String s : usersArr) {
             System.out.println(findUser(s) ? "Added Users" : "Cannot find " + s);
         }
@@ -330,15 +343,8 @@ public class Handler extends Thread {
             clientID = Integer.parseInt(id);
             System.out.println("DEF ID: " + clientID);
         } catch (Exception e) {
+            System.out.println("User not found");
             e.printStackTrace();
-            System.out.println("New Username: ");
-            username = scanner.next();
-            System.out.println("Enter email: ");
-            String email = scanner.next();
-            System.out.println("Enter Phone number (Integer): ");
-            String number = scanner.next();
-            String contents = username + "," + email + "," + number;
-            post("/users", HttpRequest.BodyPublishers.ofString(contents));
         }
         System.out.println(clientID);
         System.out.println("GET: Client ID");
