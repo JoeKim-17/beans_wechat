@@ -38,8 +38,8 @@ public class ChatController {
     return chatDao.deleteChatById(ChatId);
   }
 
-  @RequestMapping(method = RequestMethod.POST, consumes = MediaType.ALL_VALUE)
-  public String insertChat(@RequestBody String chat) {
+  @RequestMapping(method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+  public String insertChat(@RequestBody Chat chat) {
     return chatDao.insertChatToDb(chat);
   }
 

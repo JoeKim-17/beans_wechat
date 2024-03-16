@@ -18,6 +18,7 @@ import javax.net.ssl.SSLContext;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.levelup.model.Chat;
 import com.levelup.model.Message;
 import com.sun.net.httpserver.HttpServer;
@@ -25,8 +26,7 @@ import com.google.gson.JsonObject;
 
 public class Handler extends Thread {
     private Scanner scanner;
-    private final String baseURI = "http://wechat-beans-app.eu-west-1.elasticbeanstalk.com";
-    // private final String baseURI = "http://localhost:8080";
+    private final String baseURI = "http://wechat-beans-app.eu-west-1.elasticbeanstalk.com"; 
     // private final String baseURI = "http://localhost:8080";
     private String globalUser = "";
     private String username = "";
