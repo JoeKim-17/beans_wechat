@@ -4,10 +4,18 @@ import java.sql.Timestamp;
 
 public class Message {
 
-  private int messageID; 
+  private int messageID;
   private int chatID;
   private String content;
   private Timestamp CreatedAt;
+
+  public Message() {}
+
+  public Message(int messageID, int chatID, String content) {
+    this.messageID = messageID;
+    this.chatID = chatID;
+    this.content = content;
+  }
 
   public Message(int messageID, int chatID, String content, Timestamp CreatedAt) {
     this.messageID = messageID;
@@ -15,8 +23,6 @@ public class Message {
     this.content = content;
     this.CreatedAt = CreatedAt;
   }
-
-  public Message() {}
 
   public int getMessageID() {
     return messageID;

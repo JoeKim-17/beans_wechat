@@ -13,18 +13,23 @@ public class Message {
     this.receiver = receiver;
     this.content = content;
   }
+  public Message(int ChatId, String content){
+    this.chatID = ChatId;
+    this.content = content;
+  }
 
-  public Message() {}
+  public Message() {
+  }
 
   public int getChatID() {
     return this.chatID;
   }
 
   public void setChatID(int chatID) {
-    this.chatID = chatID;
+    this.chatID = chatID; 
   }
 
-  public int getMessageID(){
+  public int getMessageID() {
     return this.messageID;
   }
 
