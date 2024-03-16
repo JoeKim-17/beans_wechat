@@ -115,6 +115,7 @@ public class Handler extends Thread {
                     case "--signin":
                         String code = login();
                         this.accessToken = getAccessToken(code);
+                        System.out.println(getUserDetails());
                         break;
                     case "--addgroupmember":
                         String group = scanner.next().trim();
@@ -201,6 +202,19 @@ public class Handler extends Thread {
                 .build();
         HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
         return response.statusCode()==200? response.body().split("&")[0].split("=")[1]: "";
+    }
+
+    private String getUserDetails() throws IOException, InterruptedException{
+        HttpRequest request = HttpRequest.newBuilder()
+        .uri(URI.create("https://api.github.com/user"))
+        .header("Content-Type", "application/x-www-form-urlencoded")
+        .header("Authorization", "Bearer "+this.accessToken)
+        .GET()
+        .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        
+        return response.body();
     }
 
     private String processMsg(String command) throws URISyntaxException, IOException, InterruptedException {
