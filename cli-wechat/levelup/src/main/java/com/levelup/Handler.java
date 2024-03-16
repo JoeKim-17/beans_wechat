@@ -35,6 +35,7 @@ public class Handler extends Thread {
     private String username = "";
     private HttpClient client;
     private int clientID;
+    private String accessToken = "";
 
     public Handler(Scanner scanner, Logger logger) {
         this.scanner = scanner;
@@ -108,28 +109,7 @@ public class Handler extends Thread {
                         break;
                     case "--signin":
                         String code = login();
-                        HttpRequest request = HttpRequest.newBuilder()
-                                .uri(URI.create("https://github.com/login/oauth/access_token"))
-                                .header("Content-Type", "application/x-www-form-urlencoded")
-                                .POST(HttpRequest.BodyPublishers.ofString(
-                                        String.format("client_id=%s&client_secret=%s&code=%s", "baacd8518020cf9e7322", "d95a1c43b6651c50ed47a58c109f648c45d3f3b2",
-                                                URLEncoder.encode(code, "UTF-8"))))
-                                .build();
-
-                        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-                        System.out.println(response.body());
-                        System.out.println(response.body().split("&")[0].split("=")[1]);
-
-                        HttpRequest request1 = HttpRequest.newBuilder()
-                        .uri(URI.create("https://api.github.com/user"))
-                        .header("Content-Type", "application/x-www-form-urlencoded")
-                        .header("Authorization", "Bearer "+(response.body().split("&")[0].split("=")[1]).trim())
-                        .GET()
-                        .build();
-
-                        HttpResponse<String> response1 = client.send(request1, HttpResponse.BodyHandlers.ofString());
-                        
-                        System.out.println((response1.body()));
+                        this.accessToken = getAccessToken(code);
                         break;
                     case "--addgroupmember":
                         String group = scanner.next().trim();
@@ -165,10 +145,16 @@ public class Handler extends Thread {
 
     private Optional<String> code = Optional.empty();
 
+    private void checkAccessToken(){
+        if (this.accessToken == "") {
+            System.out.println("Please login first");
+        }
+    }
+
     private String login() throws URISyntaxException, IOException, InterruptedException {
         String stringCode = "";
-        String clientId_secret = "baacd8518020cf9e7322";
-        String clientLoginURL = "https://github.com/login/oauth/authorize?client_id=" + clientId_secret
+        String clientId = "baacd8518020cf9e7322";
+        String clientLoginURL = "https://github.com/login/oauth/authorize?client_id=" + clientId
                 + "&scope=user";
         System.out.println(clientLoginURL);
         String resp = "Authentication Successful, you can close window";
@@ -198,15 +184,18 @@ public class Handler extends Thread {
         return stringCode;
     }
 
-    private HttpResponse<String> getAccessToken(String url, HttpRequest.BodyPublisher publisher)
+    private String getAccessToken(String code)
             throws URISyntaxException, IOException, InterruptedException {
 
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(new URI(url))
-                .header("accept", "application/json")
-                .POST(publisher)
+                HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("https://github.com/login/oauth/access_token"))
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .POST(HttpRequest.BodyPublishers.ofString(
+                        String.format("client_id=%s&client_secret=%s&code=%s", "baacd8518020cf9e7322", "d95a1c43b6651c50ed47a58c109f648c45d3f3b2",
+                                URLEncoder.encode(code, "UTF-8"))))
                 .build();
-        return client.send(request, BodyHandlers.ofString());
+        HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
+        return response.statusCode()==200? response.body().split("&")[0].split("=")[1]: "";
     }
 
     private String processMsg(String command) throws URISyntaxException, IOException, InterruptedException {
@@ -278,6 +267,7 @@ public class Handler extends Thread {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI(baseURI + extension))
                 .headers("Content-Type", "text/plain;charset=UTF-8")
+                .header("Authorization", "Bearer "+this.accessToken)
                 .POST(publisher)
                 .build();
         return client.send(request, BodyHandlers.ofString());
@@ -288,6 +278,7 @@ public class Handler extends Thread {
         System.out.println(baseURI + extension);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI(baseURI + extension))
+                .header("Authorization", "Bearer "+this.accessToken)
                 .header(header, value)
                 .GET()
                 .build();
