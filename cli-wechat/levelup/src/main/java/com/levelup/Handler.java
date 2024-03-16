@@ -4,23 +4,29 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.security.Security;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.Scanner;
+import javax.net.ssl.SSLContext;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.levelup.model.*; 
+import com.levelup.model.Chat;
+import com.levelup.model.Message;
 import com.sun.net.httpserver.HttpServer;
+import com.google.gson.JsonObject;
 
 public class Handler extends Thread {
     private Scanner scanner;
-    private final String baseURI = "http://wechat-beans-app.eu-west-1.elasticbeanstalk.com";
+    private final String baseURI = "http://wechat-beans-app.eu-west-1.elasticbeanstalk.com"; 
     // private final String baseURI = "http://localhost:8080";
     private String globalUser = "";
     private String username = "";
@@ -28,12 +34,12 @@ public class Handler extends Thread {
     private HttpClient client;
     private int clientID;
     private ReceiverHandler receiverForMsg;
+    private String accessToken = "";
 
     public Handler(Scanner scanner) {
         this.scanner = scanner;
         client = HttpClient.newHttpClient();
     }
-
 
     @Override
     public void run() {
@@ -95,13 +101,38 @@ public class Handler extends Thread {
                         String user = scanner.next().trim();
                         System.out.println(findUser(user) ? "Added Friend" : "Can't find user");
                         break;
-                    case "--signin": 
-                        System.out.println("Please visit the following URL to authenticate:");
-                        login();
-                        System.out.println("Enter Username:");
-                        username = scanner.next().trim();
-                        System.out.println(username + "+++++++++++++++++++++++++++++");
-                        getClientID();
+                    case "--signin":
+                        String code = login();
+                        JsonObject accessTokenObject = new JsonObject();
+                        accessTokenObject.addProperty("client_id", "baacd8518020cf9e7322");
+                        accessTokenObject.addProperty("code", code);
+                        accessTokenObject.addProperty("client_secret", "a654be051d1ab5327aea912734f4e75a4f49bd6");
+                        String s = new Gson().toJson(accessTokenObject);
+                        HttpRequest request = HttpRequest.newBuilder()
+                                .uri(URI.create("https://github.com/login/oauth/access_token"))
+                                .header("Content-Type", "application/x-www-form-urlencoded")
+                                .POST(HttpRequest.BodyPublishers.ofString(
+                                        String.format("client_id=%s&client_secret=%s&code=%s", "Iv1.e7597fd0dd9b7d63",
+                                                "1d8d9a42510aa99a1199018dfcae0fd2a5c15d30",
+                                                URLEncoder.encode(code, "UTF-8"))))
+                                .build();
+
+                        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+                        System.out.println(response.body());
+                        System.out.println(response.body().split("&")[0].split("=")[1]);
+
+                        HttpRequest request1 = HttpRequest.newBuilder()
+                                .uri(URI.create("https://api.github.com/user?access_token="
+                                        + response.body().split("&")[0].split("=")[1]))
+                                .header("Content-Type", "application/x-www-form-urlencoded")
+                                .GET()
+                                .build();
+
+                        HttpResponse<String> response1 = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+                        System.out.println((response1.body()));
+                        this.accessToken = getAccessToken(code);
+                        System.out.println(getUserDetails());
                         break;
                     case "--addgroupmember":
                         String group = scanner.next().trim();
@@ -137,15 +168,19 @@ public class Handler extends Thread {
 
     private Optional<String> code = Optional.empty();
 
+    private void checkAccessToken() {
+        if (this.accessToken == "") {
+            System.out.println("Please login first");
+        }
+    }
+
     private String login() throws URISyntaxException, IOException, InterruptedException {
         String stringCode = "";
-        String clientId = "Iv1.e7597fd0dd9b7d63";
-        String redirect_uri = "http://localhost:8080"; 
+        String clientId = "baacd8518020cf9e7322";
         String clientLoginURL = "https://github.com/login/oauth/authorize?client_id=" + clientId
-                + "&redirect_uri=" + redirect_uri + "/login&scope=user";
-
+                + "&scope=user";
         System.out.println(clientLoginURL);
-        String resp = "Close windows";
+        String resp = "Authentication Successful, you can close window";
         try {
 
             HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
@@ -166,35 +201,38 @@ public class Handler extends Thread {
                 Thread.sleep(50);
             }
             stringCode = code.get();
-            
-            String json = "https://github.com/login/oauth/access_token/json?client_id=" + code.get()
-            + "&client_secret=ea654be051d1ab5327aea912734f4e75a4f49bd6" + "&redirect_uri="
-            + redirect_uri;
-            System.out.println(json);
-            server.createContext("/loggedin", exchange -> {
-                String query = exchange.getRequestURI().getQuery();
-                if (query != null) {
-                    System.out.println(query);
-                    exchange.sendResponseHeaders(200, "Finished process".getBytes().length);
-                    exchange.getResponseBody().write("Finished process".getBytes());
-                    System.out.println(json);
-                }
-            });
-            // "/oauth/access_token/json" +
-            // "?client_id=${gitHuboverflow.auth.client.clientId}" +
-            // "&client_secret=${gitHuboverflow.auth.client.secret}" +
-            // "&redirect_uri=${gitHuboverflow.auth.server.redirectUri}", produces =
-            // "application/x-www-form-urlencoded"
-            System.out.println("DEBUG: " + stringCode);
-            // HttpClient 
-
-            // System.out.println(tokenResponse.body());
-            // get access code 
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println(stringCode);
         return stringCode;
+    }
+
+    private String getAccessToken(String code)
+            throws URISyntaxException, IOException, InterruptedException {
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("https://github.com/login/oauth/access_token"))
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .POST(HttpRequest.BodyPublishers.ofString(
+                        String.format("client_id=%s&client_secret=%s&code=%s", "baacd8518020cf9e7322",
+                                "d95a1c43b6651c50ed47a58c109f648c45d3f3b2",
+                                URLEncoder.encode(code, "UTF-8"))))
+                .build();
+        HttpResponse<String> response = client.send(request, BodyHandlers.ofString());
+        return response.statusCode() == 200 ? response.body().split("&")[0].split("=")[1] : "";
+    }
+
+    private String getUserDetails() throws IOException, InterruptedException {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("https://api.github.com/user"))
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .header("Authorization", "Bearer " + this.accessToken)
+                .GET()
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        return response.body();
     }
 
     private String processMsg(String command) throws URISyntaxException, IOException, InterruptedException {
@@ -265,6 +303,7 @@ public class Handler extends Thread {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI(baseURI + extension))
                 .headers("Content-Type", "text/plain;charset=UTF-8")
+                .header("Authorization", "Bearer " + this.accessToken)
                 .POST(publisher)
                 .build();
         return client.send(request, BodyHandlers.ofString());
@@ -275,6 +314,7 @@ public class Handler extends Thread {
         System.out.println(baseURI + extension);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI(baseURI + extension))
+                .header("Authorization", "Bearer " + this.accessToken)
                 .header(header, value)
                 .GET()
                 .build();
@@ -311,7 +351,6 @@ public class Handler extends Thread {
                 .forEach(obj -> printConvo(obj));
         if (msg != "")
             sendMessage(msg);
-
     }
 
     private void printConvo(JsonElement json) {
