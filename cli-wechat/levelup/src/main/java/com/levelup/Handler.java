@@ -8,13 +8,10 @@ import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse.BodyHandlers;
-import java.security.Security;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.Scanner;
-import javax.net.ssl.SSLContext;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -22,11 +19,10 @@ import com.google.gson.JsonElement;
 import com.levelup.model.Chat;
 import com.levelup.model.Message;
 import com.sun.net.httpserver.HttpServer;
-import com.google.gson.JsonObject;
 
 public class Handler extends Thread {
     private Scanner scanner;
-    private final String baseURI = "http://wechat-beans-app.eu-west-1.elasticbeanstalk.com"; 
+    private final String baseURI = "http://wechat-beans-app.eu-west-1.elasticbeanstalk.com";
     // private final String baseURI = "http://localhost:8080";
     private String globalUser = "";
     private String username = "";
@@ -103,34 +99,6 @@ public class Handler extends Thread {
                         break;
                     case "--signin":
                         String code = login();
-                        JsonObject accessTokenObject = new JsonObject();
-                        accessTokenObject.addProperty("client_id", "baacd8518020cf9e7322");
-                        accessTokenObject.addProperty("code", code);
-                        accessTokenObject.addProperty("client_secret", "a654be051d1ab5327aea912734f4e75a4f49bd6");
-                        String s = new Gson().toJson(accessTokenObject);
-                        HttpRequest request = HttpRequest.newBuilder()
-                                .uri(URI.create("https://github.com/login/oauth/access_token"))
-                                .header("Content-Type", "application/x-www-form-urlencoded")
-                                .POST(HttpRequest.BodyPublishers.ofString(
-                                        String.format("client_id=%s&client_secret=%s&code=%s", "Iv1.e7597fd0dd9b7d63",
-                                                "1d8d9a42510aa99a1199018dfcae0fd2a5c15d30",
-                                                URLEncoder.encode(code, "UTF-8"))))
-                                .build();
-
-                        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-                        System.out.println(response.body());
-                        System.out.println(response.body().split("&")[0].split("=")[1]);
-
-                        HttpRequest request1 = HttpRequest.newBuilder()
-                                .uri(URI.create("https://api.github.com/user?access_token="
-                                        + response.body().split("&")[0].split("=")[1]))
-                                .header("Content-Type", "application/x-www-form-urlencoded")
-                                .GET()
-                                .build();
-
-                        HttpResponse<String> response1 = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-                        System.out.println((response1.body()));
                         this.accessToken = getAccessToken(code);
                         System.out.println(getUserDetails());
                         break;
