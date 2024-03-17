@@ -14,7 +14,7 @@ begin
 	inner join Chat on Chat.ChatId  = Message.ChatId
 	inner join Users Senders on Senders.UserId = Chat.Sender and Senders.UserId in (Chat.Sender, Chat.Receiver)
 	inner join Users Receivers on Receivers.UserId = Chat.Receiver and Receivers.UserId in  (Chat.Sender, Chat.Receiver)
-	where Senders.UserName in (@SenderName, @receiverUserName) and Receivers.UserName in (@SenderName, @receiverUserName)
+	where Senders.UserName in (@senderUserName, @receiverUserName) and Receivers.UserName in (@senderUserName, @receiverUserName)
 end
 ;
 go 
