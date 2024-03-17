@@ -57,4 +57,10 @@ public class Chat {
   public void setCreatedAt(Timestamp createdAt) {
     CreatedAt = createdAt;
   }
+
+  @Override
+  public String toString() {
+      // TODO Auto-generated method stub
+      return ChatId+","+Sender+","+Receiver;
+  }
 }

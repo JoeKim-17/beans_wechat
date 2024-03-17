@@ -70,8 +70,7 @@ public class MessageDao {
     return json;
   }
 
-  public String insertMessageToDb(Message message) {
-
+  public String insertMessageToDb(Message message) { 
     final String sql = "INSERT INTO Message (ChatId, Content) VALUES (?, ?)";
     final int ChatId = message.getChatID();
     final String Content = message.getContent();

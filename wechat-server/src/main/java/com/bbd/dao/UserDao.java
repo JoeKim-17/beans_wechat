@@ -19,7 +19,7 @@ import com.google.gson.Gson;
 public class UserDao {
 
   @Autowired
-  private JdbcTemplate jdbcTemplate;
+  private JdbcTemplate jdbcTemplate = new JdbcTemplate();
 
   final String dbQuery = "USE beanwechat;";
 
