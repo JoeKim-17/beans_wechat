@@ -1,3 +1,6 @@
+use beanwechat;
+go
+
 drop procedure getUserChat; 
 go
 
@@ -6,12 +9,12 @@ CREATE PROCEDURE getUserChat
    @receiverUserName VARCHAR(100)
 as
 begin 
-    SELECT Message.ChatId, messageID, Senders.UserName as senderUserName, Receivers.UserName as receiverUserName, Content as content, Message.CreatedAt as CreatedAt
+    SELECT Message.ChatId as ChatId, messageID, Senders.UserName as SenderName, Receivers.UserName as ReceiverName, Content as Content, Message.CreatedAt as CreatedAt
 	FROM Message
 	inner join Chat on Chat.ChatId  = Message.ChatId
 	inner join Users Senders on Senders.UserId = Chat.Sender and Senders.UserId in (Chat.Sender, Chat.Receiver)
 	inner join Users Receivers on Receivers.UserId = Chat.Receiver and Receivers.UserId in  (Chat.Sender, Chat.Receiver)
-	where Senders.UserName in (@senderUserName, @receiverUserName) and Receivers.UserName in (@senderUserName, @receiverUserName)
+	where Senders.UserName in (@SenderName, @receiverUserName) and Receivers.UserName in (@SenderName, @receiverUserName)
 end
 ;
 go 
@@ -35,6 +38,8 @@ IF NOT EXISTS (
 		  INSERT INTO Chat (Sender, Receiver)
 		  VALUES ((SELECT UserId FROM Users WHERE UserName=@Sender),( SELECT UserId FROM Users WHERE UserName= @Receiver));
 	end
+
+
 	select * from Chat
 	where Sender = (SELECT UserId FROM Users WHERE UserName=@Sender) and
 	Receiver = ( SELECT UserId FROM Users WHERE UserName= @Receiver)
