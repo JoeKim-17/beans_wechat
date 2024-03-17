@@ -17,6 +17,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.levelup.model.Chat;
 import com.levelup.model.Message;
 import com.levelup.model.User;
@@ -24,9 +25,8 @@ import com.sun.net.httpserver.HttpServer;
 
 public class Handler extends Thread {
     private Scanner scanner;
-    // private final String baseURI =
-    // "http://wechat-beans-app.eu-west-1.elasticbeanstalk.com";
-    private final String baseURI = "http://localhost:8080";
+    private final String baseURI = "http://wechat-beans-app.eu-west-1.elasticbeanstalk.com";
+    // private final String baseURI = "http://localhost:8080";
     private String globalUser = "";
     private String username = "";
     private int chatID = -1;
@@ -110,7 +110,9 @@ public class Handler extends Thread {
                         processGit(gitDetails);
                     case "--insert":
                         String s = (username == "" || username == null) || gitId == 0 ? "" : insertUser();
-                        System.out.println("INSERT: " + s);
+                        if (s.contains("Violation of UNIQUE KEY constraint \'UniqueUserName\'")) {
+                            System.out.println("Username already inserted");
+                        }
                         break;
                     default:
                         if (command.startsWith("--")) {
@@ -149,7 +151,18 @@ public class Handler extends Thread {
         this.username = json.get("login").toString();
         this.username = this.username.substring(1, this.username.length() - 1);
         String tempEmail = json.get("email").toString();
-        this.email = tempEmail.equals("null") ? insertEmail() : tempEmail;
+        try {
+            this.email = tempEmail.equals("null") ? insertEmail() : tempEmail;
+        } catch (URISyntaxException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         System.out.println(gitId + "," + username);
     }
 
@@ -157,29 +170,46 @@ public class Handler extends Thread {
      * Scans email and phone nubmer
      * 
      * @return email of user
+     * @throws InterruptedException
+     * @throws IOException
+     * @throws URISyntaxException
      */
-    private String insertEmail() {
-        System.out.println("Enter email");
-        String ans = scanner.next();
-        String regex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
-        while (!ans.matches(regex)) {
-            System.out.println("Invalid email");
-            ans = scanner.next();
-        }
-        while (true) {
-            try {
-                System.out.println("Enter Phone number");
-                this.number = scanner.next();
-                int num = Integer.parseInt(this.number);
-                if (num <= 0) {
-                } else {
-                    break;
-                }
-            } catch (Exception e) {
+    private String insertEmail() throws URISyntaxException, IOException, InterruptedException {
+        HttpResponse<String> response = get("/chats/" + username, "get", "value");
+        String localEmail = "";
+        if (response.body().toString().equals("null") || response.body() == null
+                || response.body().toString() == null) {
+            System.out.println("DEBUG EMAIL " + response.body());
+            System.out.println("Enter email");
+            localEmail = scanner.next();
+            String regex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
+            while (!localEmail.matches(regex)) {
+                System.out.println("Invalid email");
+                localEmail = scanner.next();
             }
-            System.out.println("Invalid Phone number");
+            while (true) {
+                try {
+                    System.out.println("Enter Phone number");
+                    this.number = scanner.next();
+                    int num = Integer.parseInt(this.number);
+                    if (num <= 0) {
+                    } else {
+                        break;
+                    }
+                } catch (Exception e) {
+                }
+                System.out.println("Invalid Phone number");
+            }
+        } else {
+            try {
+                localEmail = new Gson().fromJson(response.body(), JsonElement.class).getAsJsonObject()
+                        .get("EmailAddress").getAsString();
+            } catch (Exception e) {
+                localEmail = "";
+            }
+            this.number = "";
         }
-        return ans;
+        return localEmail;
     }
 
     private Optional<String> code = Optional.empty();
@@ -354,19 +384,22 @@ public class Handler extends Thread {
         // get all chats for a certain user id and receiver username
         System.out.println("Started coversation with " + globalUser);
         System.out.println("Sending to " + globalUser + (msg == "" ? ":" : (":\nMe:" + msg)));
-        receiverForMsg = new ReceiverHandler(username, globalUser);
-        receiverForMsg.start();
-        sleep(50);
+        // receiverForMsg = new ReceiverHandler(username, globalUser);
+        // receiverForMsg.start();
+        // sleep(50);
         Chat c = new Chat(-1, username, globalUser);
         String json = jsonifyString(c);
         JsonObject jsonObject = new Gson().fromJson(json, JsonObject.class);
         DEBUG(json);
-        HttpResponse<String> response = get("/chats/userchat/" + cutString(jsonObject.get("Sender").toString()) + "/"
-                + cutString(jsonObject.get("Receiver").toString()), "get", "value");
+        String path = "/chats/userchat/" + cutString(jsonObject.get("Sender").toString()) + "/"
+                + cutString(jsonObject.get("Receiver").toString());
+        System.out.println("Get: " + path);
+        HttpResponse<String> response = get(path, "get", "value");
         DEBUG("chats response:" + response.body().toString());
         if (response.body().toString().contains("404 NOT_FOUND Not Found,Record not found")) {
             System.out.println("No Chat found before");
             String jsonString = jsonifyString(c); // json the chat
+            System.out.println("DEBUG INSERT CHAT " + jsonString);
             response = post("/chats", HttpRequest.BodyPublishers.ofString(jsonString));
             if (response.body().toString().contains("404 NOT_FOUND Not Found,Record not found")) {
                 System.out.println("Error with CHATS POST");
@@ -374,11 +407,15 @@ public class Handler extends Thread {
             JsonArray resp = new Gson().fromJson(response.body(), JsonArray.class);
             System.out.println("Processing for ChatID");
             chatID = Integer.parseInt(resp.get(resp.size() - 1).getAsJsonObject().get("ChatId").getAsString());
-        } else {
-            JsonArray allChats = new Gson().fromJson(response.body(), JsonArray.class);
-            System.out.println("See Prev vonerstion\n"+allChats);
-            allChats.asList().stream()
-                    .forEach(obj -> printConvo(obj));
+        } else { // All chats received
+            try {
+                JsonArray allChats = new Gson().fromJson(response.body(), JsonArray.class);
+                System.out.println("See Prev vonerstion\n" + allChats);
+                allChats.asList().stream()
+                        .forEach(obj -> printConvo(obj));
+            } catch (Exception e) {
+                System.out.println("catch it " + response.body());
+            }
         }
 
         if (msg != "")
@@ -392,40 +429,18 @@ public class Handler extends Thread {
     private void printConvo(JsonElement json) {
         // Lambda expression's parameter json cannot redeclare another local variable
         // defined in an enclosing scope.
-        String content = json.getAsJsonObject().get("content").toString();
-        String name = json.getAsJsonObject().get("senderUserName").toString().replace(username, "me");
-        String tmStamp = json.getAsJsonObject().get("CreatedAt").toString();
-        chatID = json.getAsJsonObject().get("senderUserName").toString().equals("\"" + username + "\"")
-                ? Integer.parseInt(json.getAsJsonObject().get("ChatId").toString())
+        JsonObject jObject = json.getAsJsonObject();
+        String content = jObject.get("content").toString();
+        String name = jObject.get("senderUserName").toString().replace(username, "Me");
+        String tmStamp = jObject.get("CreatedAt").toString();
+        chatID = jObject.get("senderUserName").toString().equals("\"" + username + "\"")
+                ? Integer.parseInt(jObject.get("ChatId").toString())
                 : chatID;
         System.out.println(tmStamp.substring(1, tmStamp.length() - 1) + " " + name.replace("\"", "") + ": "
                 + content.substring(1, content.length() - 1));
         DEBUG(chatID + "CHAT ID");
         DEBUG(json.getAsJsonObject().get("senderUserName").toString());
     }
-
-    // private void getClientID() throws URISyntaxException, IOException,
-    // InterruptedException {
-    // try {
-    // String allChat = get("/users", "get", "value").body();
-    // DEBUG(allChat);
-
-    // JsonArray convertedObject = new Gson().fromJson(allChat, JsonArray.class);
-    // Optional<JsonElement> holdObject = convertedObject.asList().stream()
-    // .filter(chat ->
-    // chat.getAsJsonObject().get("UserName").getAsString().equals(username)).findFirst();
-    // System.out.println("==================================");
-    // String id = holdObject.get().getAsJsonObject().get("UserId").toString();
-    // DEBUG(id);
-    // clientID = Integer.parseInt(id);
-    // System.out.println("DEF ID: " + clientID);
-    // } catch (Exception e) {
-    // System.out.println("User not found");
-    // e.printStackTrace();
-    // }
-    // System.out.println(clientID);
-    // System.out.println("GET: Client ID");
-    // }
 
     private void sendMessage(String msg) throws URISyntaxException, IOException, InterruptedException {
         String json = jsonifyString(new Message(chatID, msg));
@@ -439,7 +454,7 @@ public class Handler extends Thread {
         return gson.toJson(o);
     }
 
-    private boolean DEBUG = true;
+    private boolean DEBUG = false;
 
     private void DEBUG(String s) {
         System.out.print(DEBUG ? "DEBUG: " + s + "\n" : "");

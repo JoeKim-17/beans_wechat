@@ -89,7 +89,7 @@ public class ChatDao {
   }
 
   public String getUserChat(String senderUserName, String receiverUserName) {
-    final String sql = "EXECUTE getUserChat ?, ?";
+    final String sql = "EXECUTE getUserChat @senderUserName=?, @receiverUserName=?";
     System.out.println("DEBUG: " + senderUserName + "," + receiverUserName + " = " + dbQuery + sql);
     List<CustomObject> chatData;
     try {
@@ -113,6 +113,7 @@ public class ChatDao {
 
   public String insertChatToDb(Chat chat) {
     final String sql = "EXECUTE InsertIntoChat @Sender= ?, @Receiver= ?";
+    System.out.println("DEBUG INSERT CHAT");
     final String sender = chat.getSender();
     final String receiver = chat.getReceiver();
     List<Chat> data = null;
@@ -130,7 +131,7 @@ public class ChatDao {
         return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body("Failed to INSERT: UserName not found")
             .toString();
       }
-
+      e.printStackTrace();
       return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(e.getMessage()).toString();
     }
     String json = new Gson().toJson(data);

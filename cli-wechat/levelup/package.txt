@@ -1,0 +1,1 @@
+jpackage --type exe --app-version "2.10.0" --input . --dest .. --main-jar modules/levelup-1.0-SNAPSHOT.jar --main-class com.levelup.Client --module-path .\dependency\ --add-modules com.google.gson --name BeansChat --win-console --win-dir-chooser --win-menu --win-shortcut --win-shortcut-prompt

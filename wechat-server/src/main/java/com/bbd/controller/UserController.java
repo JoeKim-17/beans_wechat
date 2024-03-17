@@ -28,6 +28,10 @@ public class UserController {
   public String getUserById(@PathVariable("id") int UserId) {
     return userDao.getUserById(UserId);
   }
+  @RequestMapping(value = "/username/{username}", method = RequestMethod.GET)
+  public String getUserByName(@PathVariable("username") String username) {
+    return userDao.getUserByName(username);
+  }
 
   @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
   public String deleteUserById(@PathVariable("id") int UserId) {

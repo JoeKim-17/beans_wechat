@@ -15,6 +15,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>21</maven.compiler.source>
     <maven.compiler.target>21</maven.compiler.target>
+    <maven.compiler.release>21</maven.compiler.release>
   </properties>
 
   <dependencies>
@@ -34,7 +35,7 @@
 			<artifactId>junit-jupiter-api</artifactId>
 			<version>5.9.0-M1</version>
 			<scope>test</scope>
-		</dependency> --> 
+		</dependency> -->
   </dependencies>
 
   <build>
@@ -42,9 +43,39 @@
       <plugins>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jlink-plugin</artifactId>
+          <version>3.1.0</version>
+          <configuration>
+            <modulePaths>${project.build.directory}/dependency</modulePaths>
+            <!-- configure as you please -->
+            <noManPages>true</noManPages>
+            <noHeaderFiles>true</noHeaderFiles>
+            <stripDebug>true</stripDebug>
+            <compress>2</compress>
+            <verbose>true</verbose>
+          </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>3.6.1</version>
+          <executions>
+            <execution>
+              <id>build-classpath</id>
+              <phase>generate-sources</phase>
+              <goals>
+                <goal>build-classpath</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-jar-plugin</artifactId>
           <version>3.0.2</version>
           <configuration>
+            <outputDirectory>${project.build.directory}/modules</outputDirectory>
             <archive>
               <manifest>
                 <mainClass>com.levelup.Client</mainClass>
