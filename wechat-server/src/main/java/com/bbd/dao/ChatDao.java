@@ -44,7 +44,8 @@ public class ChatDao {
     @Override
     public CustomObject mapRow(ResultSet resultSet, int i) throws SQLException {
       CustomObject customObject = new CustomObject();
-      customObject.setChatId(resultSet.getInt("ChatId"));;
+      customObject.setChatId(resultSet.getInt("ChatId"));
+      ;
       customObject.setSenderUserName(resultSet.getString("SenderName"));
       customObject.setReceiverUserName(resultSet.getString("ReceiverName"));
       customObject.setContent(resultSet.getString("Content"));
@@ -89,12 +90,12 @@ public class ChatDao {
 
   public String getUserChat(String senderUserName, String receiverUserName) {
     final String sql = "EXECUTE getUserChat ?, ?";
-    System.out.println("DEBUG: "+senderUserName+","+receiverUserName+" = "+dbQuery+sql);
+    System.out.println("DEBUG: " + senderUserName + "," + receiverUserName + " = " + dbQuery + sql);
     List<CustomObject> chatData;
     try {
       chatData = jdbcTemplate.query(dbQuery + sql, new CustomObjectRowMapper(),
           new Object[] { senderUserName, receiverUserName });
-
+      System.out.println(chatData);
     } catch (EmptyResultDataAccessException e) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage()).toString();
     } catch (Exception e) {
@@ -114,10 +115,12 @@ public class ChatDao {
     final String sql = "EXECUTE InsertIntoChat @Sender= ?, @Receiver= ?";
     final String sender = chat.getSender();
     final String receiver = chat.getReceiver();
-
+    List<Chat> data = null;
     try {
-      jdbcTemplate.update(dbQuery + sql, new Object[] { sender, receiver });
+      data = jdbcTemplate.query(dbQuery + sql, new ChatRowMapper(), new Object[] { sender, receiver });
+      System.out.println("DEBUG INSERCHAT " + data.toString());
     } catch (EmptyResultDataAccessException e) {
+      e.printStackTrace();
       return ResponseEntity.status(HttpStatus.NOT_FOUND).body("data not found").toString();
     } catch (Exception e) {
       boolean isFkConstraintError = e.getMessage()
@@ -130,8 +133,9 @@ public class ChatDao {
 
       return ResponseEntity.status(HttpStatus.FAILED_DEPENDENCY).body(e.getMessage()).toString();
     }
-
-    return ResponseEntity.status(HttpStatus.CREATED).body("Record Inserted successfully").toString();
+    String json = new Gson().toJson(data);
+    System.out.println("ret: " + json);
+    return json;
   }
 
   public String deleteChatById(int ChatId) {

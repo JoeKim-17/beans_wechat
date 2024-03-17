@@ -78,6 +78,5 @@ public class MessageController {
     notifcations.put(message.getChatID(), message.getContent());
     System.out.println("GUBED: " + message);
     return messageDao.insertMessageToDb(message);
-
   }
 }
