@@ -16,14 +16,17 @@ import java.util.Scanner;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.levelup.model.Chat;
 import com.levelup.model.Message;
+import com.levelup.model.User;
 import com.sun.net.httpserver.HttpServer;
 
 public class Handler extends Thread {
     private Scanner scanner;
-    private final String baseURI = "http://wechat-beans-app.eu-west-1.elasticbeanstalk.com";
-    // private final String baseURI = "http://localhost:8080";
+    // private final String baseURI =
+    // "http://wechat-beans-app.eu-west-1.elasticbeanstalk.com";
+    private final String baseURI = "http://localhost:8080";
     private String globalUser = "";
     private String username = "";
     private int chatID = -1;
@@ -31,6 +34,9 @@ public class Handler extends Thread {
     private int clientID;
     private ReceiverHandler receiverForMsg;
     private String accessToken = "";
+    private int gitId;
+    private String email;
+    private String number;
 
     public Handler(Scanner scanner) {
         this.scanner = scanner;
@@ -100,20 +106,11 @@ public class Handler extends Thread {
                     case "--signin":
                         String code = login();
                         this.accessToken = getAccessToken(code);
-                        System.out.println(getUserDetails());
-                        break;
-                    case "--addgroupmember":
-                        String group = scanner.next().trim();
-                        System.out.println(findGroup(group) ? "Found Group" : "Wrong Group Entered");
-                        scanUsers(scanner.nextLine().trim());
-                        break;
-                    case "--viewgroup":
-                        group = scanner.next().trim();
-                        System.out.println(group + ": " + viewMembers(group));
-                        break;
-                    case "--login":
-                        System.out.println("Duncan begin");
-                        String accessCode = login();
+                        String gitDetails = getUserDetails();
+                        processGit(gitDetails);
+                    case "--insert":
+                        String s = (username == "" || username == null) || gitId == 0 ? "" : insertUser();
+                        System.out.println("INSERT: " + s);
                         break;
                     default:
                         if (command.startsWith("--")) {
@@ -132,6 +129,57 @@ public class Handler extends Thread {
             }
         }
 
+    }
+
+    private String insertUser() throws URISyntaxException, IOException, InterruptedException {
+        JsonObject json = new JsonObject();
+        json.addProperty("username", username);
+        json.addProperty("id", gitId);
+        System.out.println(json.toString());
+        User user = new User(gitId, this.username, this.email, this.number);
+        String jsonString = jsonifyString(user);
+        System.out.println("Json " + jsonString);
+        return post("/users", HttpRequest.BodyPublishers.ofString(jsonString)).body().toString();
+    }
+
+    private void processGit(String gitDetails) {
+        System.out.println(gitDetails);
+        JsonObject json = new Gson().fromJson(gitDetails, JsonObject.class);
+        this.gitId = Integer.parseInt(json.get("id").toString());
+        this.username = json.get("login").toString();
+        this.username = this.username.substring(1, this.username.length() - 1);
+        String tempEmail = json.get("email").toString();
+        this.email = tempEmail.equals("null") ? insertEmail() : tempEmail;
+        System.out.println(gitId + "," + username);
+    }
+
+    /**
+     * Scans email and phone nubmer
+     * 
+     * @return email of user
+     */
+    private String insertEmail() {
+        System.out.println("Enter email");
+        String ans = scanner.next();
+        String regex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
+        while (!ans.matches(regex)) {
+            System.out.println("Invalid email");
+            ans = scanner.next();
+        }
+        while (true) {
+            try {
+                System.out.println("Enter Phone number");
+                this.number = scanner.next();
+                int num = Integer.parseInt(this.number);
+                if (num <= 0) {
+                } else {
+                    break;
+                }
+            } catch (Exception e) {
+            }
+            System.out.println("Invalid Phone number");
+        }
+        return ans;
     }
 
     private Optional<String> code = Optional.empty();
@@ -270,7 +318,7 @@ public class Handler extends Thread {
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI(baseURI + extension))
-                .headers("Content-Type", "text/plain;charset=UTF-8")
+                .headers("Content-type", "application/json")
                 .header("Authorization", "Bearer " + this.accessToken)
                 .POST(publisher)
                 .build();
@@ -311,14 +359,34 @@ public class Handler extends Thread {
         sleep(50);
         Chat c = new Chat(-1, username, globalUser);
         String json = jsonifyString(c);
+        JsonObject jsonObject = new Gson().fromJson(json, JsonObject.class);
         DEBUG(json);
-        HttpResponse<String> response = get("/chats/userchat/" + c.getSender() + "/" + c.getReceiver(), "get", "value");
-        DEBUG("chats response:" + response.body());
-        JsonArray allChats = new Gson().fromJson(response.body(), JsonArray.class);
-        allChats.asList().stream()
-                .forEach(obj -> printConvo(obj));
+        HttpResponse<String> response = get("/chats/userchat/" + cutString(jsonObject.get("Sender").toString()) + "/"
+                + cutString(jsonObject.get("Receiver").toString()), "get", "value");
+        DEBUG("chats response:" + response.body().toString());
+        if (response.body().toString().contains("404 NOT_FOUND Not Found,Record not found")) {
+            System.out.println("No Chat found before");
+            String jsonString = jsonifyString(c); // json the chat
+            response = post("/chats", HttpRequest.BodyPublishers.ofString(jsonString));
+            if (response.body().toString().contains("404 NOT_FOUND Not Found,Record not found")) {
+                System.out.println("Error with CHATS POST");
+            }
+            JsonArray resp = new Gson().fromJson(response.body(), JsonArray.class);
+            System.out.println("Processing for ChatID");
+            chatID = Integer.parseInt(resp.get(resp.size() - 1).getAsJsonObject().get("ChatId").getAsString());
+        } else {
+            JsonArray allChats = new Gson().fromJson(response.body(), JsonArray.class);
+            System.out.println("See Prev vonerstion\n"+allChats);
+            allChats.asList().stream()
+                    .forEach(obj -> printConvo(obj));
+        }
+
         if (msg != "")
             sendMessage(msg);
+    }
+
+    private String cutString(String s) {
+        return s.substring(1, s.length() - 1);
     }
 
     private void printConvo(JsonElement json) {
@@ -336,26 +404,28 @@ public class Handler extends Thread {
         DEBUG(json.getAsJsonObject().get("senderUserName").toString());
     }
 
-    private void getClientID() throws URISyntaxException, IOException, InterruptedException {
-        try {
-            String allChat = get("/users", "get", "value").body();
-            DEBUG(allChat);
+    // private void getClientID() throws URISyntaxException, IOException,
+    // InterruptedException {
+    // try {
+    // String allChat = get("/users", "get", "value").body();
+    // DEBUG(allChat);
 
-            JsonArray convertedObject = new Gson().fromJson(allChat, JsonArray.class);
-            Optional<JsonElement> holdObject = convertedObject.asList().stream()
-                    .filter(chat -> chat.getAsJsonObject().get("UserName").getAsString().equals(username)).findFirst();
-            System.out.println("==================================");
-            String id = holdObject.get().getAsJsonObject().get("UserId").toString();
-            DEBUG(id);
-            clientID = Integer.parseInt(id);
-            System.out.println("DEF ID: " + clientID);
-        } catch (Exception e) {
-            System.out.println("User not found");
-            e.printStackTrace();
-        }
-        System.out.println(clientID);
-        System.out.println("GET: Client ID");
-    }
+    // JsonArray convertedObject = new Gson().fromJson(allChat, JsonArray.class);
+    // Optional<JsonElement> holdObject = convertedObject.asList().stream()
+    // .filter(chat ->
+    // chat.getAsJsonObject().get("UserName").getAsString().equals(username)).findFirst();
+    // System.out.println("==================================");
+    // String id = holdObject.get().getAsJsonObject().get("UserId").toString();
+    // DEBUG(id);
+    // clientID = Integer.parseInt(id);
+    // System.out.println("DEF ID: " + clientID);
+    // } catch (Exception e) {
+    // System.out.println("User not found");
+    // e.printStackTrace();
+    // }
+    // System.out.println(clientID);
+    // System.out.println("GET: Client ID");
+    // }
 
     private void sendMessage(String msg) throws URISyntaxException, IOException, InterruptedException {
         String json = jsonifyString(new Message(chatID, msg));
