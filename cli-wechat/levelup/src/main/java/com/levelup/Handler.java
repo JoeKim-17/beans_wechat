@@ -72,23 +72,9 @@ public class Handler extends Thread {
                         breakLoop = true;
                         scanner.close();
                         break;
-                    case "--convo":
-                        displayConvo();
-                        break;
                     case "--msg":
                         startMessage();
                         msgTrigger = true;
-                        break;
-                    case "--creategroup":
-                        String groupName = scanner.next();
-                        String nextLine = scanner.nextLine();
-                        if (nextLine == "") {
-                            System.out.println("Enter group members username (separated by spaces)");
-                            scanUsers(scanner.nextLine().trim());
-                        } else {
-                            scanUsers(nextLine);
-                        }
-                        System.out.println("Created group " + groupName);
                         break;
                     case "--help":
                         command = scanner.nextLine().trim();
@@ -111,14 +97,16 @@ public class Handler extends Thread {
                     case "--insert":
                         String s = (username == "" || username == null) || gitId == 0 ? "" : insertUser();
                         if (s.contains("Violation of UNIQUE KEY constraint \'UniqueUserName\'")) {
-                            System.out.println("Username already inserted");
+                            System.out.println("Welcome back");
+                        } else {
+                            System.out.println("Signed in");
                         }
                         break;
                     default:
                         if (command.startsWith("--")) {
                             System.err.println("Incorrect command entered.");
                         } else if (msgTrigger) {
-                            System.out.println(processMsg(command));
+                            processMsg(command);
                         } else {
                             System.err.println(
                                     "Unknown command entered.\nType --help <enter> to see all commands available");
@@ -127,7 +115,11 @@ public class Handler extends Thread {
                 }
             } catch (Exception e) {
                 System.err.println("Mishap: ");
-                e.printStackTrace();
+                if (e.getMessage().contains(("com.google.gson.JsonArray but was com.google.gson.JsonPrimitive"))) {
+                    System.out.println("Ensure correct spelling of username");
+                } else {
+                    e.printStackTrace();
+                }
             }
         }
 
@@ -137,15 +129,12 @@ public class Handler extends Thread {
         JsonObject json = new JsonObject();
         json.addProperty("username", username);
         json.addProperty("id", gitId);
-        System.out.println(json.toString());
         User user = new User(gitId, this.username, this.email, this.number);
         String jsonString = jsonifyString(user);
-        System.out.println("Json " + jsonString);
         return post("/users", HttpRequest.BodyPublishers.ofString(jsonString)).body().toString();
     }
 
     private void processGit(String gitDetails) {
-        System.out.println(gitDetails);
         JsonObject json = new Gson().fromJson(gitDetails, JsonObject.class);
         this.gitId = Integer.parseInt(json.get("id").toString());
         this.username = json.get("login").toString();
@@ -163,7 +152,6 @@ public class Handler extends Thread {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        System.out.println(gitId + "," + username);
     }
 
     /**
@@ -179,7 +167,6 @@ public class Handler extends Thread {
         String localEmail = "";
         if (response.body().toString().equals("null") || response.body() == null
                 || response.body().toString() == null) {
-            System.out.println("DEBUG EMAIL " + response.body());
             System.out.println("Enter email");
             localEmail = scanner.next();
             String regex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
@@ -284,15 +271,7 @@ public class Handler extends Thread {
     private String processMsg(String command) throws URISyntaxException, IOException, InterruptedException {
         String msg = command.trim() + " " + scanner.nextLine().trim();
         sendMessage(msg);
-        return "Me: " + msg;
-    }
-
-    private String viewMembers(String group) {
-        return "Place Holder Group Members";
-    }
-
-    private boolean findGroup(String group) {
-        return true;
+        return "";
     }
 
     private void processHelp(String command) {
@@ -330,22 +309,12 @@ public class Handler extends Thread {
         }
     }
 
-    private void scanUsers(String users) {
-        // String users = scanner.nextLine().trim();
-        String[] usersArr = users.split(" ");
-        for (String s : usersArr) {
-            System.out.println(findUser(s) ? "Added Users" : "Cannot find " + s);
-        }
-    }
-
     private boolean findUser(String s) {
         return true;
     }
 
     private HttpResponse<String> post(String extension, HttpRequest.BodyPublisher publisher)
             throws URISyntaxException, IOException, InterruptedException {
-        System.out.println(baseURI + extension);
-
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI(baseURI + extension))
                 .headers("Content-type", "application/json")
@@ -357,7 +326,6 @@ public class Handler extends Thread {
 
     private HttpResponse<String> get(String extension, String header, String value)
             throws URISyntaxException, IOException, InterruptedException {
-        System.out.println(baseURI + extension);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI(baseURI + extension))
                 .header("Authorization", "Bearer " + this.accessToken)
@@ -374,8 +342,6 @@ public class Handler extends Thread {
         convertedObject.asList().stream()
                 .forEach(o -> System.out.println(o.getAsJsonObject().get("chatID").toString()));
         System.out.println(convertedObject.asList());
-        System.out.println();
-        System.out.println(get("/messages", "get", "value").body());
     }
 
     private void startMessage() throws URISyntaxException, IOException, InterruptedException {
@@ -393,33 +359,34 @@ public class Handler extends Thread {
         DEBUG(json);
         String path = "/chats/userchat/" + cutString(jsonObject.get("Sender").toString()) + "/"
                 + cutString(jsonObject.get("Receiver").toString());
-        System.out.println("Get: " + path);
         HttpResponse<String> response = get(path, "get", "value");
         DEBUG("chats response:" + response.body().toString());
         if (response.body().toString().contains("404 NOT_FOUND Not Found,Record not found")) {
-            System.out.println("No Chat found before");
+            System.out.println("Brand New Conversation");
             String jsonString = jsonifyString(c); // json the chat
-            System.out.println("DEBUG INSERT CHAT " + jsonString);
             response = post("/chats", HttpRequest.BodyPublishers.ofString(jsonString));
             if (response.body().toString().contains("404 NOT_FOUND Not Found,Record not found")) {
-                System.out.println("Error with CHATS POST");
+                System.err.println("Error with CHATS POST");
             }
             JsonArray resp = new Gson().fromJson(response.body(), JsonArray.class);
-            System.out.println("Processing for ChatID");
             chatID = Integer.parseInt(resp.get(resp.size() - 1).getAsJsonObject().get("ChatId").getAsString());
         } else { // All chats received
             try {
                 JsonArray allChats = new Gson().fromJson(response.body(), JsonArray.class);
-                System.out.println("See Prev vonerstion\n" + allChats);
-                allChats.asList().stream()
-                        .forEach(obj -> printConvo(obj));
+                if (msg != "") {
+                    sendMessage(msg);
+                } else {
+                    allChats.asList().stream().forEach(obj -> printConvo(obj));
+                }
             } catch (Exception e) {
-                System.out.println("catch it " + response.body());
+                if (username == "" || username == null) {
+                    System.out.println("Please --signin");
+                } else {
+                    System.out.println("Caught: " + response.body());
+                    e.printStackTrace();
+                }
             }
         }
-
-        if (msg != "")
-            sendMessage(msg);
     }
 
     private String cutString(String s) {
@@ -444,9 +411,18 @@ public class Handler extends Thread {
 
     private void sendMessage(String msg) throws URISyntaxException, IOException, InterruptedException {
         String json = jsonifyString(new Message(chatID, msg));
-        System.out.println("DEBUG json: " + json);
         HttpResponse<String> response = post("/messages", HttpRequest.BodyPublishers.ofString(json));
-        System.out.println(response.body());
+        if (response.body().contains("201 CREATED Created,Record Inserted successfully")) {
+            // Received Successfully
+            String path = "/chats/userchat/" + username + "/"
+                    + globalUser;
+            response = get(path, "get", "value");
+            JsonArray allChats = new Gson().fromJson(response.body(), JsonArray.class);
+            allChats.asList().stream()
+                    .forEach(obj -> printConvo(obj));
+        } else {
+            System.err.println("Please --signin and --msg");
+        }
     }
 
     private String jsonifyString(Object o) {
