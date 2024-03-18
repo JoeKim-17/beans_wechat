@@ -24,9 +24,8 @@ import com.sun.net.httpserver.HttpServer;
 
 public class Handler extends Thread {
     private Scanner scanner;
-    // private final String baseURI =
-    // "http://wechat-beans-app.eu-west-1.elasticbeanstalk.com";
-    private final String baseURI = "http://localhost:8080";
+    private final String baseURI = "http://wechat-beans-app.eu-west-1.elasticbeanstalk.com";
+    // private final String baseURI = "http://localhost:8080";
     private String globalUser = "";
     private String username = "";
     private int chatID = -1;
@@ -376,7 +375,7 @@ public class Handler extends Thread {
             chatID = Integer.parseInt(resp.get(resp.size() - 1).getAsJsonObject().get("ChatId").getAsString());
         } else {
             JsonArray allChats = new Gson().fromJson(response.body(), JsonArray.class);
-            System.out.println("See Prev vonerstion\n"+allChats);
+            System.out.println("See Prev vonerstion\n" + allChats);
             allChats.asList().stream()
                     .forEach(obj -> printConvo(obj));
         }
