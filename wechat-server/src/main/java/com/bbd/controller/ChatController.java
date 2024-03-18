@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.bbd.dao.ChatDao;
 import com.bbd.model.Chat;
+import com.google.gson.Gson;
 
 @RestController
 @RequestMapping("/chats")
@@ -39,8 +40,12 @@ public class ChatController {
   }
 
   @RequestMapping(method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-  public String insertChat(@RequestBody Chat chat) {
-    return chatDao.insertChatToDb(chat);
+  public String insertChat(@RequestBody String chat) {
+    Chat c = new Gson().fromJson(chat, Chat.class);
+    System.out.println("DEBUG InsertChat :" + chat);
+    String rec = chatDao.insertChatToDb(c);
+    System.out.println("REC: "+rec);
+    return rec;
   }
 
 }

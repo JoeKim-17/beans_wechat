@@ -19,7 +19,7 @@ import com.google.gson.Gson;
 public class UserDao {
 
   @Autowired
-  private JdbcTemplate jdbcTemplate;
+  private JdbcTemplate jdbcTemplate = new JdbcTemplate();
 
   final String dbQuery = "USE beanwechat;";
 
@@ -129,4 +129,17 @@ public class UserDao {
     return ResponseEntity.status(HttpStatus.OK).body("Record deleted successfully").toString();
   }
 
+  public String getUserByName(String username) {
+    final String sql = "SELECT UserId, UserName, EmailAddress, MobileNo, CreatedAt FROM Users WHERE UserName = ?";
+
+    User user = null;
+    try {
+      user = jdbcTemplate.queryForObject(dbQuery + sql, new UserRowMapper(), username);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    String json = new Gson().toJson(user);
+
+    return json;
+  }
 }

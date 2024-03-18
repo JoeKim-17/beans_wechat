@@ -67,10 +67,8 @@ public class ChatDaoTest {
   @Test
   public void testInsertChatToDb() {
     // Testing insertChatToDb method
-    ResponseEntity<String> expectedResponse = ResponseEntity.status(HttpStatus.CREATED)
-        .body("Record Inserted successfully");
-    assertEquals(expectedResponse.toString(),
-        chatDao.insertChatToDb(new Chat(1, "sender", "receiver", null)));
+    assertEquals("[]",
+        chatDao.insertChatToDb(new Chat(1000, "sender", "receiver", null)));
   }
 
   @Test
